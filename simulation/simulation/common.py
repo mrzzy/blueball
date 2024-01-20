@@ -143,20 +143,12 @@ class Character:
 class Background:
     def __init__(self):
         self.sprite = Sprite(BACKGROUND_SPRITES_PATH, 5)
-<<<<<<< HEAD
-    
     def draw(self, state, pos=(0, 0)):
         for i in range(len(self.sprite.image_list)):
             state.screen.blit(
-                self.sprite.image_list[i].convert_alpha(),
+                self.sprite.image_list[i],
                 pos
             )
-
-=======
-
-    def draw(self, state):
-        return
->>>>>>> b6400dac54e1014570e013ddc4f994c00e8ac669
 
 
 class Ball:
