@@ -81,7 +81,7 @@ class Sprite:
         self.frame = 0
         self.end_frame = end_frame
         for i in range(0, len(image_list)):
-            image = pygame.image.load(image_list[i])
+            image = pygame.image.load(image_list[i]).convert_alpha()
             image = pygame.transform.scale(
                 image, (image.get_width() * scale, image.get_height() * scale)
             )
@@ -130,8 +130,13 @@ class Background:
     def __init__(self):
         self.sprite = Sprite(BACKGROUND_SPRITES_PATH, 5)
     
-    def draw(self, state):
-        return
+    def draw(self, state, pos=(0, 0)):
+        for i in range(len(self.sprite.image_list)):
+            state.screen.blit(
+                self.sprite.image_list[i].convert_alpha(),
+                pos
+            )
+
 
 
 class Ball:
@@ -147,7 +152,9 @@ class State:
         self.screen = pygame.display.set_mode((screen_width, screen_height))
         self.player = Character(screen_width / 3, screen_height / 3)
         self.enemy = Character(2 * (screen_width / 3), 2 * (screen_height / 3))
+        self.background = Background()
         self.ball = Ball()
+        self.clock = pygame.time.Clock()
 
 
 class UserInput:
