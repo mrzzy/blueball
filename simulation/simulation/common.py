@@ -90,7 +90,7 @@ class CharacterState(Enum):
 class Character:
     def __init__(self, x, y):
         self.pos = pygame.Vector2(x, y)
-        self.current_state = CharacterState.Running
+        self.current_state = CharacterState.Idle
         self.idle_sprite = Sprite(IDLE_SPRITES_PATH, 5)
         self.running_sprite = Sprite(RUN_SPRITES_PATH, 7)
         self.kicking_sprite = Sprite(KICK_SPRITES_PATH, 6)
@@ -162,13 +162,17 @@ def eval(previous_state: State, userinput: UserInput) -> State:
 
     for keystroke in userinput.keystrokes:
         if keystroke == KeyStroke.P_MoveLeft:
+            state.player.current_state = CharacterState.Running
             state.player.pos.x -= movement * state.dt
         if keystroke == KeyStroke.P_MoveRight:
+            state.player.current_state = CharacterState.Running
             state.player.pos.x += movement * state.dt
 
         if keystroke == KeyStroke.E_MoveLeft:
+            state.enemy.current_state = CharacterState.Running
             state.enemy.pos.x -= movement * state.dt
         if keystroke == KeyStroke.E_MoveRight:
+            state.enemy.current_state = CharacterState.Running
             state.enemy.pos.x += movement * state.dt
 
     # limits FPS to 60
