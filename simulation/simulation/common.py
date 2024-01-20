@@ -99,7 +99,8 @@ class CharacterState(Enum):
     Idle = auto()
     Running = auto()
     Kicking = auto()
-    Jumping = auto()
+    JumpingUp = auto()
+    JumpingDown = auto()
 
 
 class Character:
@@ -121,8 +122,10 @@ class Character:
             return self.idle_sprite
         if self.current_state == CharacterState.Running:
             return self.running_sprite
-        if self.current_state == CharacterState.Jumping:
+        if self.current_state == CharacterState.JumpingUp:
             return self.jumping_up_sprite
+        if self.current_state == CharacterState.JumpingDown:
+            return self.jumping_down_sprite
         return self.kicking_sprite
 
     def draw(self, state, inter_frame_delay, position, special_flags=0):
@@ -155,13 +158,11 @@ class Character:
 class Background:
     def __init__(self):
         self.sprite = Sprite(BACKGROUND_SPRITES_PATH, 5)
-    
+
     def draw(self, state, pos=(0, 0)):
         for i in range(len(self.sprite.image_list)):
-            state.screen.blit(
-                self.sprite.image_list[i],
-                pos
-            )
+            state.screen.blit(self.sprite.image_list[i], pos)
+
 
 class Ball:
     def __init__(self):
@@ -196,9 +197,24 @@ def eval(previous_state: State, userinput: UserInput) -> State:
 
     # When kicking, if the ball is nearby, move the ball
     if state.player.current_state == CharacterState.Kicking:
-        if state.player.get_sprite().frame in [0, 1, 2]:
+        if state.player.get_sprite().frame in [0, 1]:
             if state.player.direction == 1:  # To the right
-                top_right = state.player.pos + state.player.get_sprite
+                right_x = (
+                    state.player.pos.x
+                    + (sprite_width * scale)
+                    - ((sprite_width / 2) - 5) * scale
+                )
+                right_y = (
+                    state.player.pos.y
+                    + (sprite_width * scale)
+                    - ((sprite_width / 2) - 5) * scale
+                )
+                if (
+                    state.ball.pos.x >= right_x
+                    and state.ball.pos.x <= right_x + 50
+                    and state.ball.pos.y <= right_y
+                ):
+                    state.ball.vel = (25, 0)
 
     # Update ball position based on velocity
     state.ball.pos += state.ball.vel
@@ -223,9 +239,7 @@ def eval(previous_state: State, userinput: UserInput) -> State:
                 state.player.current_state = CharacterState.Kicking
             if keystroke == KeyStroke.P_Jump:
                 player_moved = True
-                state.player.is_jumping = True
-                jump_count = jump_max
-                state.player.current_state = CharacterState.Jumping
+                state.player.current_state = CharacterState.JumpingUp
 
         if state.enemy.current_state != CharacterState.Kicking:
             if keystroke == KeyStroke.E_MoveLeft:
@@ -241,16 +255,17 @@ def eval(previous_state: State, userinput: UserInput) -> State:
             if keystroke == KeyStroke.E_Kick:
                 enemy_moved = True
                 state.enemy.current_state = CharacterState.Kicking
-            if keystroke == KeyStroke.P_Jump:
+            if keystroke == KeyStroke.E_Jump:
                 enemy_moved = True
-                state.enemy.current_state = CharacterState.Jumping
+                state.enemy.current_state = CharacterState.JumpingUp
 
-    if state.player.is_jumping:
-        state.player.pos.y -= jump_count
-        if jump_count > -jump_max:
-            jump_count -= 1
-        else:
-            state.player.is_jumping = False
+    # if state.player.is_jumping:
+    #     state.player.pos.y -= jump_count
+    #     if jump_count > -jump_max:
+    #         jump_count -= 1
+    #     else:
+    #         state.player.is_jumping = False
+
     if not player_moved and state.player.current_state == CharacterState.Running:
         state.player.current_state = CharacterState.Idle
         state.player.get_sprite().frame = 0

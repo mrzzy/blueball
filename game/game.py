@@ -3,6 +3,7 @@ from enum import Enum, auto
 from simulation import common
 from typing import List
 
+
 def get_sprite(character: common.Character) -> common.Sprite:
     if character.current_state == common.CharacterState.Idle:
         return character.idle_sprite
@@ -12,11 +13,13 @@ def get_sprite(character: common.Character) -> common.Sprite:
         return character.kicking_sprite
     return None
 
+
 def draw_fps_counter(state):
-    font = pygame.font.SysFont("Arial", 18, bold = True)
+    font = pygame.font.SysFont("Arial", 18, bold=True)
     fps = str(int(state.clock.get_fps()))
     fps_font = font.render(fps, 1, pygame.Color("RED"))
     state.screen.blit(fps_font, (50, 0))
+
 
 def draw(state: common.State) -> None:
     # fill the screen with a color to wipe away anything from last frame
@@ -46,7 +49,7 @@ def run(player: bool):
     state = common.State()
 
     while running:
-        state.clock.tick();
+        state.clock.tick()
         # poll for events
         # pygame.QUIT event means the user clicked X to close your window
         for event in pygame.event.get():
