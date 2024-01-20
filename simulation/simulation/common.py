@@ -6,11 +6,12 @@ screen_height = 720
 clock = pygame.time.Clock()
 running = True
 fps = 60
-grav = 300
+grav = 100
 movement = 300
 scale = 3
 jump_max = 10
 jump_count = 0
+magic_number = 17
 
 sprite_width = 288
 sprite_height = 128
@@ -131,7 +132,7 @@ class Character:
     def draw(self, state, inter_frame_delay, position, special_flags=0):
         time_now = pygame.time.get_ticks()
         if time_now > self.next_frame_time:
-            inter_frame_delay = 80
+            inter_frame_delay = 140
             self.next_frame_time = time_now + inter_frame_delay
             if self.get_sprite().frame + 1 > self.get_sprite().end_frame:
                 # Set current frame to 0
@@ -142,8 +143,16 @@ class Character:
                 self.get_sprite().frame = 0
             self.get_sprite().frame += 1
 
-        center_sprite = (position.x - (self.get_sprite().image_list[self.get_sprite().frame].get_width() / 2), 
-                         position.y - ((self.get_sprite().image_list[0].get_height() / 2) + self.get_sprite().image_list[self.get_sprite().frame].get_height() - 17))
+        center_sprite = (
+            position.x
+            - (self.get_sprite().image_list[self.get_sprite().frame].get_width() / 2),
+            position.y
+            - (
+                (self.get_sprite().image_list[0].get_height() / 2)
+                + self.get_sprite().image_list[self.get_sprite().frame].get_height()
+                - 17
+            ),
+        )
         state.screen.blit(
             self.get_sprite().image_list[self.get_sprite().frame]
             if self.direction
@@ -177,8 +186,8 @@ class State:
     def __init__(self):
         self.dt = 0
         self.screen = pygame.display.set_mode((screen_width, screen_height))
-        self.player = Character(screen_width / 3, screen_height / 3)
-        self.enemy = Character(2 * (screen_width / 3), 2 * (screen_height / 3))
+        self.player = Character(screen_width / 3, screen_height - 100)
+        self.enemy = Character(2 * (screen_width / 3), screen_height - 100)
         self.background = Background()
         self.ball = Ball()
         self.clock = pygame.time.Clock()
@@ -224,8 +233,29 @@ def eval(previous_state: State, userinput: UserInput) -> State:
     player_moved = False
     enemy_moved = False
     for keystroke in userinput.keystrokes:
+        # Whlie it is in the air
+        if state.player.current_state == CharacterState.JumpingUp:
+            player_moved = True
+            state.player.pos.y -= movement * state.dt * 2
+            if keystroke == KeyStroke.P_MoveLeft:
+                state.player.pos.x -= movement * state.dt
+            elif keystroke == KeyStroke.P_MoveRight:
+                state.player.pos.x += movement * state.dt
+
+            if state.player.get_sprite().frame == state.player.get_sprite().end_frame:
+                state.player.current_state = CharacterState.JumpingDown
+        elif state.player.current_state == CharacterState.JumpingDown:
+            player_moved = True
+            state.player.pos.y -= movement * state.dt * 2
+            if state.player.pos.y == 0:
+                state.player.current_state = CharacterState.Idle
+
         # Not allowed to move when its kicking
-        if state.player.current_state != CharacterState.Kicking:
+        elif (
+            state.player.current_state != CharacterState.Kicking
+            or state.player.current_state != CharacterState.JumpingDown
+            or state.player.current_state != CharacterState.JumpingUp
+        ):
             if keystroke == KeyStroke.P_MoveLeft:
                 player_moved = True
                 state.player.current_state = CharacterState.Running
@@ -276,10 +306,10 @@ def eval(previous_state: State, userinput: UserInput) -> State:
         state.enemy.get_sprite().frame = 0
 
     # Don't go off screen
-    if state.player.pos.y >= screen_height - sprite_height * scale:
-        state.player.pos.y = screen_height - sprite_height * scale
-    if state.enemy.pos.y >= screen_height - sprite_height * scale:
-        state.enemy.pos.y = screen_height - sprite_height * scale
+    if state.player.pos.y >= screen_height + magic_number * 2:
+        state.player.pos.y = screen_height + magic_number * 2
+    if state.enemy.pos.y >= screen_height + magic_number * 2:
+        state.enemy.pos.y = screen_height + magic_number * 2
     if state.ball.pos.y >= screen_height - state.ball.size:
         state.ball.pos.y = screen_height - state.ball.size
 
