@@ -25,10 +25,10 @@ def draw(state: common.State) -> None:
     # Draw ball
     pygame.draw.circle(state.screen, "blue", state.ball.pos, state.ball.size)
 
-    player.draw(state, 80, state.player.pos)
+    state.player.draw(state, 80, state.player.pos)
 
     # Draw enemy
-    enemy.draw(state, 80, state.enemy.pos, pygame.BLEND_RGBA_SUB)
+    state.enemy.draw(state, 80, state.enemy.pos, pygame.BLEND_RGBA_SUB)
     # state.screen.blit(
     #     get_sprite(state.player).image_list[get_sprite(state.player).frame],
     #     state.player.pos,
