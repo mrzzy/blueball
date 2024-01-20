@@ -1,0 +1,11 @@
+#
+# blueball
+# Docker Compose
+# Deployment
+#
+
+services:
+  server:
+    image: blueball-server
+    build:
+      dockerfile: server/Dockerfile
