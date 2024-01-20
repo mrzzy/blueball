@@ -61,6 +61,7 @@ BACKGROUND_SPRITES_PATH = [
     "game/assets/bg/Hills Layer 06.png",
 ]
 
+
 class KeyStroke(Enum):
     # Player keystrokes
     P_MoveLeft = auto()
@@ -73,6 +74,7 @@ class KeyStroke(Enum):
     E_MoveRight = auto()
     E_Jump = auto()
     E_Kick = auto()
+
 
 class Sprite:
     def __init__(self, image_list, end_frame):
@@ -102,14 +104,13 @@ class Character:
         self.running_sprite = Sprite(RUN_SPRITES_PATH, 7)
         self.kicking_sprite = Sprite(KICK_SPRITES_PATH, 6)
         self.next_frame_time = 0
+        self.direction = 0  # 0 is to the left, 1 is to the right
 
     def get_sprite(self) -> Sprite:
         if self.current_state == CharacterState.Idle:
             return self.idle_sprite
         if self.current_state == CharacterState.Running:
             return self.running_sprite
-        # if self.current_state == CharacterState.Kicking:
-        #     return self.kicking_sprite
         return self.kicking_sprite
 
     def draw(self, state, inter_frame_delay, position, special_flags=0):
@@ -118,17 +119,31 @@ class Character:
             inter_frame_delay = 80
             self.next_frame_time = time_now + inter_frame_delay
             if self.get_sprite().frame + 1 > self.get_sprite().end_frame:
+                # Set current frame to 0
+                self.get_sprite().frame = 0
+                if self.current_state != CharacterState.Idle:
+                    self.current_state = CharacterState.Idle
+                # Set the next state's frame to 0 as well
                 self.get_sprite().frame = 0
             self.get_sprite().frame += 1
+
         state.screen.blit(
-            self.get_sprite().image_list[self.get_sprite().frame],
+            self.get_sprite().image_list[self.get_sprite().frame]
+            if self.direction
+            else pygame.transform.flip(
+                self.get_sprite().image_list[self.get_sprite().frame],
+                True,
+                False,
+            ),
             position,
             special_flags=special_flags,
         )
 
+
 class Background:
     def __init__(self):
         self.sprite = Sprite(BACKGROUND_SPRITES_PATH, 5)
+<<<<<<< HEAD
     
     def draw(self, state, pos=(0, 0)):
         for i in range(len(self.sprite.image_list)):
@@ -137,6 +152,11 @@ class Background:
                 pos
             )
 
+=======
+
+    def draw(self, state):
+        return
+>>>>>>> b6400dac54e1014570e013ddc4f994c00e8ac669
 
 
 class Ball:
@@ -181,20 +201,46 @@ def eval(previous_state: State, userinput: UserInput) -> State:
     # Update ball position based on velocity
     state.ball.pos += state.ball.vel
 
+    player_moved = False
+    enemy_moved = False
     for keystroke in userinput.keystrokes:
-        if keystroke == KeyStroke.P_MoveLeft:
-            state.player.current_state = CharacterState.Running
-            state.player.pos.x -= movement * state.dt
-        if keystroke == KeyStroke.P_MoveRight:
-            state.player.current_state = CharacterState.Running
-            state.player.pos.x += movement * state.dt
+        # Not allowed to move when its kicking
+        if state.player.current_state != CharacterState.Kicking:
+            if keystroke == KeyStroke.P_MoveLeft:
+                player_moved = True
+                state.player.current_state = CharacterState.Running
+                state.player.direction = 0
+                state.player.pos.x -= movement * state.dt
+            if keystroke == KeyStroke.P_MoveRight:
+                player_moved = True
+                state.player.current_state = CharacterState.Running
+                state.player.direction = 1
+                state.player.pos.x += movement * state.dt
+            if keystroke == KeyStroke.P_Kick:
+                player_moved = True
+                state.player.current_state = CharacterState.Kicking
 
-        if keystroke == KeyStroke.E_MoveLeft:
-            state.enemy.current_state = CharacterState.Running
-            state.enemy.pos.x -= movement * state.dt
-        if keystroke == KeyStroke.E_MoveRight:
-            state.enemy.current_state = CharacterState.Running
-            state.enemy.pos.x += movement * state.dt
+        if state.enemy.current_state != CharacterState.Kicking:
+            if keystroke == KeyStroke.E_MoveLeft:
+                enemy_moved = True
+                state.enemy.current_state = CharacterState.Running
+                state.enemy.direction = 0
+                state.enemy.pos.x -= movement * state.dt
+            if keystroke == KeyStroke.E_MoveRight:
+                enemy_moved = True
+                state.enemy.current_state = CharacterState.Running
+                state.enemy.direction = 1
+                state.enemy.pos.x += movement * state.dt
+            if keystroke == KeyStroke.E_Kick:
+                enemy_moved = True
+                state.enemy.current_state = CharacterState.Kicking
+
+    if not player_moved and state.player.current_state == CharacterState.Running:
+        state.player.current_state = CharacterState.Idle
+        state.player.get_sprite().frame = 0
+    if not enemy_moved and state.enemy.current_state == CharacterState.Running:
+        state.enemy.current_state = CharacterState.Idle
+        state.enemy.get_sprite().frame = 0
 
     # limits FPS to 60
     state.dt = clock.tick(fps) / 1000
