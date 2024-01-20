@@ -19,36 +19,36 @@ IDLE_SPRITES_PATH = [
 ]
 
 RUN_SPRITES_PATH = [
-    "assets/monk/run/run_1.png",
-    "assets/monk/run/run_2.png",
-    "assets/monk/run/run_3.png",
-    "assets/monk/run/run_4.png",
-    "assets/monk/run/run_5.png",
-    "assets/monk/run/run_6.png",
-    "assets/monk/run/run_7.png",
-    "assets/monk/run/run_8.png",
+    "game/assets/monk/run/run_1.png",
+    "game/assets/monk/run/run_2.png",
+    "game/assets/monk/run/run_3.png",
+    "game/assets/monk/run/run_4.png",
+    "game/assets/monk/run/run_5.png",
+    "game/assets/monk/run/run_6.png",
+    "game/assets/monk/run/run_7.png",
+    "game/assets/monk/run/run_8.png",
 ]
 
 JUMP_UP_SPRITES_PATH = [
-    "assets/monk/j_up/j_up_1.png",
-    "assets/monk/j_up/j_up_2.png",
-    "assets/monk/j_up/j_up_3.png",
+    "game/assets/monk/j_up/j_up_1.png",
+    "game/assets/monk/j_up/j_up_2.png",
+    "game/assets/monk/j_up/j_up_3.png",
 ]
 
 JUMP_DOWN_SPRITES_PATH = [
-    "assets/monk/j_down/j_down_1.png",
-    "assets/monk/j_down/j_down_2.png",
-    "assets/monk/j_down/j_down_3.png",
+    "game/assets/monk/j_down/j_down_1.png",
+    "game/assets/monk/j_down/j_down_2.png",
+    "game/assets/monk/j_down/j_down_3.png",
 ]
 
 KICK_SPRITES_PATH = [
-    "assets/monk/air_atk/air_atk_1.png",
-    "assets/monk/air_atk/air_atk_2.png",
-    "assets/monk/air_atk/air_atk_3.png",
-    "assets/monk/air_atk/air_atk_4.png",
-    "assets/monk/air_atk/air_atk_5.png",
-    "assets/monk/air_atk/air_atk_6.png",
-    "assets/monk/air_atk/air_atk_7.png",
+    "game/assets/monk/air_atk/air_atk_1.png",
+    "game/assets/monk/air_atk/air_atk_2.png",
+    "game/assets/monk/air_atk/air_atk_3.png",
+    "game/assets/monk/air_atk/air_atk_4.png",
+    "game/assets/monk/air_atk/air_atk_5.png",
+    "game/assets/monk/air_atk/air_atk_6.png",
+    "game/assets/monk/air_atk/air_atk_7.png",
 ]
 
 
@@ -77,10 +77,19 @@ class Sprite:
             self.image_list.append(image)
 
 
+class CharacterState(Enum):
+    Idle = auto()
+    Running = auto()
+    Kicking = auto()
+
+
 class Character:
     def __init__(self, x, y):
         self.pos = pygame.Vector2(x, y)
-        self.sprite = Sprite(IDLE_SPRITES_PATH, 5)
+        self.current_state = CharacterState.Running
+        self.idle_sprite = Sprite(IDLE_SPRITES_PATH, 5)
+        self.running_sprite = Sprite(RUN_SPRITES_PATH, 7)
+        self.kicking_sprite = Sprite(KICK_SPRITES_PATH, 6)
 
 
 class Ball:

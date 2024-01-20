@@ -6,6 +6,16 @@ from typing import List
 player = common.Character(100, 100)
 
 
+def get_sprite(character: common.Character) -> common.Sprite:
+    if character.current_state == common.CharacterState.Idle:
+        return character.idle_sprite
+    if character.current_state == common.CharacterState.Running:
+        return character.running_sprite
+    if character.current_state == common.CharacterState.Kicking:
+        return character.kicking_sprite
+    return None
+
+
 def draw(state: common.State) -> None:
     # fill the screen with a color to wipe away anything from last frame
     state.screen.fill("white")
@@ -14,16 +24,22 @@ def draw(state: common.State) -> None:
     pygame.draw.circle(state.screen, "blue", state.ball.pos, state.ball.size)
 
     # Draw player
-    state.screen.blit(player.sprite.image_list[player.sprite.frame], state.player.pos)
-    if player.sprite.frame + 1 > player.sprite.end_frame:
-        player.sprite.frame = 0
-    player.sprite.frame += 1
+    state.screen.blit(
+        get_sprite(state.player).image_list[get_sprite(state.player).frame],
+        state.player.pos,
+    )
+    if get_sprite(state.player).frame + 1 > get_sprite(state.player).end_frame:
+        get_sprite(state.player).frame = 0
+    get_sprite(state.player).frame += 1
 
     # Draw enemy
-    state.screen.blit(player.sprite.image_list[player.sprite.frame], state.enemy.pos)
-    if player.sprite.frame + 1 > player.sprite.end_frame:
-        player.sprite.frame = 0
-    player.sprite.frame += 1
+    if state.enemy.current_state == common.CharacterState.Idle:
+        state.screen.blit(
+            player.idle_sprite.image_list[player.idle_sprite.frame], state.enemy.pos
+        )
+        if player.idle_sprite.frame + 1 > player.idle_sprite.end_frame:
+            player.idle_sprite.frame = 0
+        player.idle_sprite.frame += 1
 
     # flip() the display to put your work on screen
     pygame.display.flip()
