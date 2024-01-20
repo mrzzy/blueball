@@ -142,6 +142,8 @@ class Character:
                 self.get_sprite().frame = 0
             self.get_sprite().frame += 1
 
+        center_sprite = (position.x - (self.get_sprite().image_list[self.get_sprite().frame].get_width() / 2), 
+                         position.y - ((self.get_sprite().image_list[0].get_height() / 2) + self.get_sprite().image_list[self.get_sprite().frame].get_height() - 17))
         state.screen.blit(
             self.get_sprite().image_list[self.get_sprite().frame]
             if self.direction
@@ -150,7 +152,7 @@ class Character:
                 True,
                 False,
             ),
-            position,
+            center_sprite,
             special_flags=special_flags,
         )
 
