@@ -48,7 +48,6 @@ def draw(state: common.State) -> None:
     #     get_sprite(state.enemy).frame = 0
     # get_sprite(state.enemy).frame += 1
 
-    enemy.draw(state, 80, state.enemy.pos, pygame.BLEND_RGBA_SUB)
 
     # flip() the display to put your work on screen
     pygame.display.flip()
