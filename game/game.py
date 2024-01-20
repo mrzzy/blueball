@@ -21,7 +21,7 @@ def draw(state: common.State) -> None:
 
 
     # Draw enemy
-    state.screen.blit(player.sprite.image_list[player.sprite.frame], state.enemy.pos)
+    state.screen.blit(player.sprite.image_list[player.sprite.frame], state.enemy.pos, special_flags=pygame.BLEND_RGBA_SUB)
     if player.sprite.frame + 1 > player.sprite.end_frame:
         player.sprite.frame = 0
     player.sprite.frame += 1
