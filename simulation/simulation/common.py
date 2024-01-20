@@ -80,7 +80,18 @@ class Sprite:
 class Character:
     def __init__(self, x, y):
         self.pos = pygame.Vector2(x, y)
+        self.next_frame_time = 0
         self.sprite = Sprite(IDLE_SPRITES_PATH, 5)
+    
+    def draw(self, state, inter_frame_delay, position, special_flags = 0):
+        time_now = pygame.time.get_ticks()
+        if (time_now > self.next_frame_time):
+            inter_frame_delay = 80
+            self.next_frame_time = time_now + inter_frame_delay
+            if self.sprite.frame + 1 > self.sprite.end_frame:
+                self.sprite.frame = 0
+            self.sprite.frame += 1
+        state.screen.blit(self.sprite.image_list[self.sprite.frame], position, special_flags=special_flags)
 
 
 class Ball:

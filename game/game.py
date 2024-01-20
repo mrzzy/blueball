@@ -3,6 +3,7 @@ from enum import Enum, auto
 from simulation import common
 from typing import List
 player = common.Character(100, 100)
+enemy = common.Character(100, 100)
 
 
 def draw(state: common.State) -> None:
@@ -14,17 +15,10 @@ def draw(state: common.State) -> None:
     pygame.draw.circle(state.screen, "blue", state.ball.pos, state.ball.size)
 
     # Draw player
-    state.screen.blit(player.sprite.image_list[player.sprite.frame], state.player.pos)
-    if player.sprite.frame + 1 > player.sprite.end_frame:
-        player.sprite.frame = 0
-    player.sprite.frame += 1
-
+    player.draw(state, 80, state.player.pos)
 
     # Draw enemy
-    state.screen.blit(player.sprite.image_list[player.sprite.frame], state.enemy.pos, special_flags=pygame.BLEND_RGBA_SUB)
-    if player.sprite.frame + 1 > player.sprite.end_frame:
-        player.sprite.frame = 0
-    player.sprite.frame += 1
+    enemy.draw(state, 80, state.enemy.pos, pygame.BLEND_RGBA_SUB)
 
     # flip() the display to put your work on screen
     pygame.display.flip()
