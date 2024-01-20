@@ -53,10 +53,17 @@ KICK_SPRITES_PATH = [
 
 
 class KeyStroke(Enum):
-    MoveLeft = auto()
-    MoveRight = auto()
-    Jump = auto()
-    Kick = auto()
+    # Player keystrokes
+    P_MoveLeft = auto()
+    P_MoveRight = auto()
+    P_Jump = auto()
+    P_Kick = auto()
+
+    # Enemy keystrokes
+    E_MoveLeft = auto()
+    E_MoveRight = auto()
+    E_Jump = auto()
+    E_Kick = auto()
 
 class Sprite:
     def __init__(self, image_list, end_frame):
@@ -90,7 +97,12 @@ class State:
         self.ball = Ball()
 
 
-def eval(previous_state: State, keystrokes: [KeyStroke]) -> State:
+class UserInput:
+    def __init__(self, keystrokes):
+        self.keystrokes: [KeyStroke] = keystrokes
+
+
+def eval(previous_state: State, userinput: UserInput) -> State:
     state = previous_state
 
     # Some gravity
@@ -106,18 +118,19 @@ def eval(previous_state: State, keystrokes: [KeyStroke]) -> State:
     if state.ball.pos.y >= screen_height - state.ball.size:
         state.ball.pos.y = screen_height - state.ball.size
 
-    keys = pygame.key.get_pressed()
-    if keys[pygame.K_w]:
-        state.player.pos.y -= movement * state.dt
-    if keys[pygame.K_s]:
-        state.player.pos.y += movement * state.dt
-    if keys[pygame.K_a]:
-        state.player.pos.x -= movement * state.dt
-    if keys[pygame.K_d]:
-        state.player.pos.x += movement * state.dt
-
     # Update ball position based on velocity
     state.ball.pos += state.ball.vel
+
+    for keystroke in userinput.keystrokes:
+        if keystroke == KeyStroke.P_MoveLeft:
+            state.player.pos.x -= movement * state.dt
+        if keystroke == KeyStroke.P_MoveRight:
+            state.player.pos.x += movement * state.dt
+
+        if keystroke == KeyStroke.E_MoveLeft:
+            state.enemy.pos.x -= movement * state.dt
+        if keystroke == KeyStroke.E_MoveRight:
+            state.enemy.pos.x += movement * state.dt
 
     # limits FPS to 60
     state.dt = clock.tick(fps) / 1000

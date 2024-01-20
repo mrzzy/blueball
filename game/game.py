@@ -1,10 +1,7 @@
 import pygame
 from enum import Enum, auto
 from simulation import common
-
-# pygame setup
-pygame.init()
-running = True
+from typing import List
 player = common.Character(100, 100)
 
 
@@ -34,17 +31,39 @@ def draw(state: common.State) -> None:
     return None
 
 
-state = common.State()
+def run(player: bool):
+    # pygame setup
+    pygame.init()
+    running = True
+    state = common.State()
 
-while running:
-    # poll for events
-    # pygame.QUIT event means the user clicked X to close your window
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            running = False
+    while running:
+        # poll for events
+        # pygame.QUIT event means the user clicked X to close your window
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                running = False
 
-    draw(state)
-    state = common.eval(state, [])
+        inputs: List[common.KeyStroke] = []
+        keys = pygame.key.get_pressed()
+        if keys[pygame.K_LEFT]:
+            inputs.append(common.KeyStroke.P_MoveLeft) if player else inputs.append(
+                common.KeyStroke.E_MoveLeft
+            )
+        if keys[pygame.K_RIGHT]:
+            inputs.append(common.KeyStroke.P_MoveRight) if player else inputs.append(
+                common.KeyStroke.E_MoveRight
+            )
+        if keys[pygame.K_SPACE]:
+            inputs.append(common.KeyStroke.P_Jump) if player else inputs.append(
+                common.KeyStroke.E_Jump
+            )
+        if keys[pygame.K_z]:
+            inputs.append(common.KeyStroke.P_Kick) if player else inputs.append(
+                common.KeyStroke.P_Kick
+            )
 
+        draw(state)
+        state = common.eval(state, common.UserInput(inputs))
 
-pygame.quit()
+    pygame.quit()
