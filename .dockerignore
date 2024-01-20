@@ -1,3 +1,9 @@
+#
+# Blueball
+# Server
+# Dockerignore
+#
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
@@ -161,6 +167,3 @@ cython_debug/
 
 # direnv
 .envrc
-
-## Custom
-.DS_Store

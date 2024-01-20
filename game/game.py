@@ -40,6 +40,10 @@ def draw(state: common.State) -> None:
         if player.idle_sprite.frame + 1 > player.idle_sprite.end_frame:
             player.idle_sprite.frame = 0
         player.idle_sprite.frame += 1
+    # state.screen.blit(player.sprite.image_list[player.sprite.frame], state.enemy.pos, special_flags=pygame.BLEND_RGBA_SUB)
+    # if player.sprite.frame + 1 > player.sprite.end_frame:
+    #     player.sprite.frame = 0
+    # player.sprite.frame += 1
 
     # flip() the display to put your work on screen
     pygame.display.flip()

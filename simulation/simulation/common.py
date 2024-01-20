@@ -8,6 +8,7 @@ running = True
 fps = 60
 grav = 300
 movement = 300
+scale = 3
 
 IDLE_SPRITES_PATH = [
     "game/assets/monk/idle/idle_1.png",
@@ -74,6 +75,9 @@ class Sprite:
         self.end_frame = end_frame
         for i in range(0, len(image_list)):
             image = pygame.image.load(image_list[i])
+            image = pygame.transform.scale(
+                image, (image.get_width() * scale, image.get_height() * scale)
+            )
             self.image_list.append(image)
 
 
@@ -122,10 +126,10 @@ def eval(previous_state: State, userinput: UserInput) -> State:
     state.ball.pos.y += grav * state.dt
 
     # Don't go off screen
-    if state.player.pos.y >= screen_height - 128:
-        state.player.pos.y = screen_height - 128
-    if state.enemy.pos.y >= screen_height - 128:
-        state.enemy.pos.y = screen_height - 128
+    if state.player.pos.y >= screen_height - 128 * scale:
+        state.player.pos.y = screen_height - 128 * scale
+    if state.enemy.pos.y >= screen_height - 128 * scale:
+        state.enemy.pos.y = screen_height - 128 * scale
     if state.ball.pos.y >= screen_height - state.ball.size:
         state.ball.pos.y = screen_height - state.ball.size
 
