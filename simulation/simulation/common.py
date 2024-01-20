@@ -9,6 +9,8 @@ fps = 60
 grav = 300
 movement = 300
 scale = 3
+jump_max = 10
+jump_count = 0
 
 sprite_width = 288
 sprite_height = 128
@@ -97,6 +99,7 @@ class CharacterState(Enum):
     Idle = auto()
     Running = auto()
     Kicking = auto()
+    Jumping = auto()
 
 
 class Character:
@@ -106,7 +109,11 @@ class Character:
         self.idle_sprite = Sprite(IDLE_SPRITES_PATH, 5)
         self.running_sprite = Sprite(RUN_SPRITES_PATH, 7)
         self.kicking_sprite = Sprite(KICK_SPRITES_PATH, 6)
+        self.jumping_up_sprite = Sprite(JUMP_UP_SPRITES_PATH, 2)
+        self.jumping_down_sprite = Sprite(JUMP_DOWN_SPRITES_PATH, 2)
         self.next_frame_time = 0
+        self.is_jumping = False
+        self.jump_count = 10
         self.direction = 0  # 0 is to the left, 1 is to the right
 
     def get_sprite(self) -> Sprite:
@@ -114,6 +121,8 @@ class Character:
             return self.idle_sprite
         if self.current_state == CharacterState.Running:
             return self.running_sprite
+        if self.current_state == CharacterState.Jumping:
+            return self.jumping_up_sprite
         return self.kicking_sprite
 
     def draw(self, state, inter_frame_delay, position, special_flags=0):
@@ -212,6 +221,11 @@ def eval(previous_state: State, userinput: UserInput) -> State:
             if keystroke == KeyStroke.P_Kick:
                 player_moved = True
                 state.player.current_state = CharacterState.Kicking
+            if keystroke == KeyStroke.P_Jump:
+                player_moved = True
+                state.player.is_jumping = True
+                jump_count = jump_max
+                state.player.current_state = CharacterState.Jumping
 
         if state.enemy.current_state != CharacterState.Kicking:
             if keystroke == KeyStroke.E_MoveLeft:
@@ -227,7 +241,16 @@ def eval(previous_state: State, userinput: UserInput) -> State:
             if keystroke == KeyStroke.E_Kick:
                 enemy_moved = True
                 state.enemy.current_state = CharacterState.Kicking
+            if keystroke == KeyStroke.P_Jump:
+                enemy_moved = True
+                state.enemy.current_state = CharacterState.Jumping
 
+    if state.player.is_jumping:
+        state.player.pos.y -= jump_count
+        if jump_count > -jump_max:
+            jump_count -= 1
+        else:
+            state.player.is_jumping = False
     if not player_moved and state.player.current_state == CharacterState.Running:
         state.player.current_state = CharacterState.Idle
         state.player.get_sprite().frame = 0

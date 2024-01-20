@@ -8,7 +8,7 @@ Time = float
 Input = Generic['Input']
 State = Generic['State']
 
-def update(*args, **kwargs):
+def update(state: State, input: Input) -> State:
     pass
 
 def compose(*fs):
@@ -18,7 +18,7 @@ def compose(*fs):
 def step(
         tx: Tuple[Time,Input],
         txs: deque[Tuple[Time,Input]],
-        tys: deque(Tuple[Time,State])):
+        tys: deque[Tuple[Time,State]]):
     time = itemgetter(0)
     val = itemgetter(1)
 
