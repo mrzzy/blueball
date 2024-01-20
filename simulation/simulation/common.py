@@ -8,48 +8,48 @@ running = True
 fps = 60
 grav = 300
 movement = 300
+
 IDLE_SPRITES_PATH = [
-    'game/assets/monk/idle/idle_1.png',
-    'game/assets/monk/idle/idle_2.png',
-    'game/assets/monk/idle/idle_3.png',
-    'game/assets/monk/idle/idle_4.png',
-    'game/assets/monk/idle/idle_5.png',
-    'game/assets/monk/idle/idle_6.png',
+    "game/assets/monk/idle/idle_1.png",
+    "game/assets/monk/idle/idle_2.png",
+    "game/assets/monk/idle/idle_3.png",
+    "game/assets/monk/idle/idle_4.png",
+    "game/assets/monk/idle/idle_5.png",
+    "game/assets/monk/idle/idle_6.png",
 ]
 
 RUN_SPRITES_PATH = [
-    'assets/monk/run/run_1.png',
-    'assets/monk/run/run_2.png',
-    'assets/monk/run/run_3.png',
-    'assets/monk/run/run_4.png',
-    'assets/monk/run/run_5.png',
-    'assets/monk/run/run_6.png',
-    'assets/monk/run/run_7.png',
-    'assets/monk/run/run_8.png',
+    "assets/monk/run/run_1.png",
+    "assets/monk/run/run_2.png",
+    "assets/monk/run/run_3.png",
+    "assets/monk/run/run_4.png",
+    "assets/monk/run/run_5.png",
+    "assets/monk/run/run_6.png",
+    "assets/monk/run/run_7.png",
+    "assets/monk/run/run_8.png",
 ]
 
 JUMP_UP_SPRITES_PATH = [
-    'assets/monk/j_up/j_up_1.png',
-    'assets/monk/j_up/j_up_2.png',
-    'assets/monk/j_up/j_up_3.png',
+    "assets/monk/j_up/j_up_1.png",
+    "assets/monk/j_up/j_up_2.png",
+    "assets/monk/j_up/j_up_3.png",
 ]
 
 JUMP_DOWN_SPRITES_PATH = [
-    'assets/monk/j_down/j_down_1.png',
-    'assets/monk/j_down/j_down_2.png',
-    'assets/monk/j_down/j_down_3.png',
+    "assets/monk/j_down/j_down_1.png",
+    "assets/monk/j_down/j_down_2.png",
+    "assets/monk/j_down/j_down_3.png",
 ]
 
 KICK_SPRITES_PATH = [
-    'assets/monk/air_atk/air_atk_1.png',
-    'assets/monk/air_atk/air_atk_2.png',
-    'assets/monk/air_atk/air_atk_3.png',
-    'assets/monk/air_atk/air_atk_4.png',
-    'assets/monk/air_atk/air_atk_5.png',
-    'assets/monk/air_atk/air_atk_6.png',
-    'assets/monk/air_atk/air_atk_7.png',
+    "assets/monk/air_atk/air_atk_1.png",
+    "assets/monk/air_atk/air_atk_2.png",
+    "assets/monk/air_atk/air_atk_3.png",
+    "assets/monk/air_atk/air_atk_4.png",
+    "assets/monk/air_atk/air_atk_5.png",
+    "assets/monk/air_atk/air_atk_6.png",
+    "assets/monk/air_atk/air_atk_7.png",
 ]
-
 
 
 class KeyStroke(Enum):
@@ -65,6 +65,7 @@ class KeyStroke(Enum):
     E_Jump = auto()
     E_Kick = auto()
 
+
 class Sprite:
     def __init__(self, image_list, end_frame):
         super().__init__()
@@ -74,6 +75,7 @@ class Sprite:
         for i in range(0, len(image_list)):
             image = pygame.image.load(image_list[i])
             self.image_list.append(image)
+
 
 class Character:
     def __init__(self, x, y):

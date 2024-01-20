@@ -2,13 +2,13 @@ import pygame
 from enum import Enum, auto
 from simulation import common
 from typing import List
+
 player = common.Character(100, 100)
 
 
 def draw(state: common.State) -> None:
     # fill the screen with a color to wipe away anything from last frame
     state.screen.fill("white")
-
 
     # Draw ball
     pygame.draw.circle(state.screen, "blue", state.ball.pos, state.ball.size)
@@ -18,7 +18,6 @@ def draw(state: common.State) -> None:
     if player.sprite.frame + 1 > player.sprite.end_frame:
         player.sprite.frame = 0
     player.sprite.frame += 1
-
 
     # Draw enemy
     state.screen.blit(player.sprite.image_list[player.sprite.frame], state.enemy.pos)
