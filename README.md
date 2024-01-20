@@ -6,3 +6,7 @@ Components of blueball:
 - `simulation` Game evaluation & simulation logic
 - `game` Game client
 - `server` Game multiplayer server
+
+## Development
+Install `simulation` module:
+```pip install -e simulation```
