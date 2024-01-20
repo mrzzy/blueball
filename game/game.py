@@ -5,20 +5,29 @@ from simulation import common
 # pygame setup
 pygame.init()
 running = True
+player = common.Character(100, 100)
 
 
 def draw(state: common.State) -> None:
     # fill the screen with a color to wipe away anything from last frame
     state.screen.fill("white")
 
+
     # Draw ball
     pygame.draw.circle(state.screen, "blue", state.ball.pos, state.ball.size)
 
     # Draw player
-    pygame.draw.rect(state.screen, "green", pygame.Rect((state.player.pos), (50, 50)))
+    state.screen.blit(player.sprite.image_list[player.sprite.frame], state.player.pos)
+    if player.sprite.frame + 1 > player.sprite.end_frame:
+        player.sprite.frame = 0
+    player.sprite.frame += 1
+
 
     # Draw enemy
-    pygame.draw.rect(state.screen, "red", pygame.Rect((state.enemy.pos), (50, 50)))
+    state.screen.blit(player.sprite.image_list[player.sprite.frame], state.enemy.pos)
+    if player.sprite.frame + 1 > player.sprite.end_frame:
+        player.sprite.frame = 0
+    player.sprite.frame += 1
 
     # flip() the display to put your work on screen
     pygame.display.flip()
