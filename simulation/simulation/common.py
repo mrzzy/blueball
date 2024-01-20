@@ -94,6 +94,30 @@ class Character:
         self.idle_sprite = Sprite(IDLE_SPRITES_PATH, 5)
         self.running_sprite = Sprite(RUN_SPRITES_PATH, 7)
         self.kicking_sprite = Sprite(KICK_SPRITES_PATH, 6)
+        self.next_frame_time = 0
+
+    def get_sprite(self) -> Sprite:
+        if self.current_state == CharacterState.Idle:
+            return self.idle_sprite
+        if self.current_state == CharacterState.Running:
+            return self.running_sprite
+        # if self.current_state == CharacterState.Kicking:
+        #     return self.kicking_sprite
+        return self.kicking_sprite
+
+    def draw(self, state, inter_frame_delay, position, special_flags=0):
+        time_now = pygame.time.get_ticks()
+        if time_now > self.next_frame_time:
+            inter_frame_delay = 80
+            self.next_frame_time = time_now + inter_frame_delay
+            if self.get_sprite().frame + 1 > self.get_sprite().end_frame:
+                self.get_sprite().frame = 0
+            self.get_sprite().frame += 1
+        state.screen.blit(
+            self.get_sprite().image_list[self.get_sprite().frame],
+            position,
+            special_flags=special_flags,
+        )
 
 
 class Ball:
