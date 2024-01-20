@@ -25,11 +25,15 @@ I suppose that this is all fine and dandy right, like what can go wrong with thi
 To resolve this issue, it is "as simple as" asking the client to evaluate and render the game state first instead of waiting for server. Then when it receives from the server, it will then overwrite it's game state.
 
 #
+(ignore this)
+
 In the POV of the client, it is the opposite of the how the server sees.
 
 Recall that the server sees gets a stream of user inputs and then transforms a stream of game states.
 
 #
+(ignore this)
+
 The client also does rollback and replay by its own. But it has to throw away its outdated game states thats all.
 
 #
@@ -71,10 +75,4 @@ def stuff(inputs):
         states'.append(new_state)
         yield new_state
         (yeah remember to add the oldest replay_inputs.time into new_state.time)
-```
-
-```
-
-
-
 ```
