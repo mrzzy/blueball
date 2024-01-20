@@ -52,6 +52,14 @@ KICK_SPRITES_PATH = [
     "game/assets/monk/air_atk/air_atk_7.png",
 ]
 
+BACKGROUND_SPRITES_PATH = [
+    "game/assets/bg/Hills Layer 01.png",
+    "game/assets/bg/Hills Layer 02.png",
+    "game/assets/bg/Hills Layer 03.png",
+    "game/assets/bg/Hills Layer 04.png",
+    "game/assets/bg/Hills Layer 05.png",
+    "game/assets/bg/Hills Layer 06.png",
+]
 
 class KeyStroke(Enum):
     # Player keystrokes
@@ -65,7 +73,6 @@ class KeyStroke(Enum):
     E_MoveRight = auto()
     E_Jump = auto()
     E_Kick = auto()
-
 
 class Sprite:
     def __init__(self, image_list, end_frame):
@@ -118,6 +125,13 @@ class Character:
             position,
             special_flags=special_flags,
         )
+
+class Background:
+    def __init__(self):
+        self.sprite = Sprite(BACKGROUND_SPRITES_PATH, 5)
+    
+    def draw(self, state):
+        return
 
 
 class Ball:
