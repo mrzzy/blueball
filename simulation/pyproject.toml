@@ -10,8 +10,15 @@ version = "0.0.1"
 description = "Blueball game simulation logic."
 
 [build-system]
-requires = ["hatchling"]
+requires = [
+  "hatchling",
+  "aioquic==0.9.25",
+]
 build-backend = "hatchling.build"
 
 [tool.hatch.build.targets.wheel]
-packages = ["simulation"]
+packages = [
+  "simulation",
+  "network",
+
+]

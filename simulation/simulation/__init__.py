@@ -3,6 +3,3 @@
 # Simulation project 
 #
 
-def test():
-    pass
-
