@@ -7,7 +7,6 @@ player = common.Character(100, 100)
 enemy = common.Character(100, 100)
 
 
-
 def get_sprite(character: common.Character) -> common.Sprite:
     if character.current_state == common.CharacterState.Idle:
         return character.idle_sprite
@@ -25,29 +24,10 @@ def draw(state: common.State) -> None:
     # Draw ball
     pygame.draw.circle(state.screen, "blue", state.ball.pos, state.ball.size)
 
+    # Draw player
     state.player.draw(state, 80, state.player.pos)
-
     # Draw enemy
     state.enemy.draw(state, 80, state.enemy.pos, pygame.BLEND_RGBA_SUB)
-    # state.screen.blit(
-    #     get_sprite(state.player).image_list[get_sprite(state.player).frame],
-    #     state.player.pos,
-    # )
-    # if get_sprite(state.player).frame + 1 > get_sprite(state.player).end_frame:
-    #     get_sprite(state.player).frame = 0
-    # get_sprite(state.player).frame += 1
-
-    # player.draw(state, 80, state.player.pos)
-
-    # Draw enemy
-    # state.screen.blit(
-    #     get_sprite(state.enemy).image_list[get_sprite(state.enemy).frame],
-    #     state.enemy.pos,
-    # )
-    # if get_sprite(state.enemy).frame + 1 > get_sprite(state.enemy).end_frame:
-    #     get_sprite(state.enemy).frame = 0
-    # get_sprite(state.enemy).frame += 1
-
 
     # flip() the display to put your work on screen
     pygame.display.flip()
@@ -83,7 +63,7 @@ def run(player: bool):
             )
         if keys[pygame.K_z]:
             inputs.append(common.KeyStroke.P_Kick) if player else inputs.append(
-                common.KeyStroke.P_Kick
+                common.KeyStroke.E_Kick
             )
 
         draw(state)
