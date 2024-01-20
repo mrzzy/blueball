@@ -9,6 +9,11 @@ fps = 60
 grav = 300
 movement = 300
 scale = 3
+jump_max = 10
+jump_count = 0
+
+sprite_width = 288
+sprite_height = 128
 
 IDLE_SPRITES_PATH = [
     "game/assets/monk/idle/idle_1.png",
@@ -94,6 +99,8 @@ class CharacterState(Enum):
     Idle = auto()
     Running = auto()
     Kicking = auto()
+    JumpingUp = auto()
+    JumpingDown = auto()
 
 
 class Character:
@@ -103,7 +110,11 @@ class Character:
         self.idle_sprite = Sprite(IDLE_SPRITES_PATH, 5)
         self.running_sprite = Sprite(RUN_SPRITES_PATH, 7)
         self.kicking_sprite = Sprite(KICK_SPRITES_PATH, 6)
+        self.jumping_up_sprite = Sprite(JUMP_UP_SPRITES_PATH, 2)
+        self.jumping_down_sprite = Sprite(JUMP_DOWN_SPRITES_PATH, 2)
         self.next_frame_time = 0
+        self.is_jumping = False
+        self.jump_count = 10
         self.direction = 0  # 0 is to the left, 1 is to the right
 
     def get_sprite(self) -> Sprite:
@@ -111,6 +122,10 @@ class Character:
             return self.idle_sprite
         if self.current_state == CharacterState.Running:
             return self.running_sprite
+        if self.current_state == CharacterState.JumpingUp:
+            return self.jumping_up_sprite
+        if self.current_state == CharacterState.JumpingDown:
+            return self.jumping_down_sprite
         return self.kicking_sprite
 
     def draw(self, state, inter_frame_delay, position, special_flags=0):
@@ -127,6 +142,8 @@ class Character:
                 self.get_sprite().frame = 0
             self.get_sprite().frame += 1
 
+        center_sprite = (position.x - (self.get_sprite().image_list[self.get_sprite().frame].get_width() / 2), 
+                         position.y - ((self.get_sprite().image_list[0].get_height() / 2) + self.get_sprite().image_list[self.get_sprite().frame].get_height() - 17))
         state.screen.blit(
             self.get_sprite().image_list[self.get_sprite().frame]
             if self.direction
@@ -135,7 +152,7 @@ class Character:
                 True,
                 False,
             ),
-            position,
+            center_sprite,
             special_flags=special_flags,
         )
 
@@ -143,12 +160,10 @@ class Character:
 class Background:
     def __init__(self):
         self.sprite = Sprite(BACKGROUND_SPRITES_PATH, 5)
+
     def draw(self, state, pos=(0, 0)):
         for i in range(len(self.sprite.image_list)):
-            state.screen.blit(
-                self.sprite.image_list[i],
-                pos
-            )
+            state.screen.blit(self.sprite.image_list[i], pos)
 
 
 class Ball:
@@ -182,13 +197,26 @@ def eval(previous_state: State, userinput: UserInput) -> State:
     state.enemy.pos.y += grav * state.dt
     state.ball.pos.y += grav * state.dt
 
-    # Don't go off screen
-    if state.player.pos.y >= screen_height - 128 * scale:
-        state.player.pos.y = screen_height - 128 * scale
-    if state.enemy.pos.y >= screen_height - 128 * scale:
-        state.enemy.pos.y = screen_height - 128 * scale
-    if state.ball.pos.y >= screen_height - state.ball.size:
-        state.ball.pos.y = screen_height - state.ball.size
+    # When kicking, if the ball is nearby, move the ball
+    if state.player.current_state == CharacterState.Kicking:
+        if state.player.get_sprite().frame in [0, 1]:
+            if state.player.direction == 1:  # To the right
+                right_x = (
+                    state.player.pos.x
+                    + (sprite_width * scale)
+                    - ((sprite_width / 2) - 5) * scale
+                )
+                right_y = (
+                    state.player.pos.y
+                    + (sprite_width * scale)
+                    - ((sprite_width / 2) - 5) * scale
+                )
+                if (
+                    state.ball.pos.x >= right_x
+                    and state.ball.pos.x <= right_x + 50
+                    and state.ball.pos.y <= right_y
+                ):
+                    state.ball.vel = (25, 0)
 
     # Update ball position based on velocity
     state.ball.pos += state.ball.vel
@@ -211,6 +239,9 @@ def eval(previous_state: State, userinput: UserInput) -> State:
             if keystroke == KeyStroke.P_Kick:
                 player_moved = True
                 state.player.current_state = CharacterState.Kicking
+            if keystroke == KeyStroke.P_Jump:
+                player_moved = True
+                state.player.current_state = CharacterState.JumpingUp
 
         if state.enemy.current_state != CharacterState.Kicking:
             if keystroke == KeyStroke.E_MoveLeft:
@@ -226,6 +257,16 @@ def eval(previous_state: State, userinput: UserInput) -> State:
             if keystroke == KeyStroke.E_Kick:
                 enemy_moved = True
                 state.enemy.current_state = CharacterState.Kicking
+            if keystroke == KeyStroke.E_Jump:
+                enemy_moved = True
+                state.enemy.current_state = CharacterState.JumpingUp
+
+    # if state.player.is_jumping:
+    #     state.player.pos.y -= jump_count
+    #     if jump_count > -jump_max:
+    #         jump_count -= 1
+    #     else:
+    #         state.player.is_jumping = False
 
     if not player_moved and state.player.current_state == CharacterState.Running:
         state.player.current_state = CharacterState.Idle
@@ -233,6 +274,14 @@ def eval(previous_state: State, userinput: UserInput) -> State:
     if not enemy_moved and state.enemy.current_state == CharacterState.Running:
         state.enemy.current_state = CharacterState.Idle
         state.enemy.get_sprite().frame = 0
+
+    # Don't go off screen
+    if state.player.pos.y >= screen_height - sprite_height * scale:
+        state.player.pos.y = screen_height - sprite_height * scale
+    if state.enemy.pos.y >= screen_height - sprite_height * scale:
+        state.enemy.pos.y = screen_height - sprite_height * scale
+    if state.ball.pos.y >= screen_height - state.ball.size:
+        state.ball.pos.y = screen_height - state.ball.size
 
     # limits FPS to 60
     state.dt = clock.tick(fps) / 1000
