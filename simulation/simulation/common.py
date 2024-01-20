@@ -10,6 +10,9 @@ grav = 300
 movement = 300
 scale = 3
 
+sprite_width = 288
+sprite_height = 128
+
 IDLE_SPRITES_PATH = [
     "game/assets/monk/idle/idle_1.png",
     "game/assets/monk/idle/idle_2.png",
@@ -143,13 +146,13 @@ class Character:
 class Background:
     def __init__(self):
         self.sprite = Sprite(BACKGROUND_SPRITES_PATH, 5)
+    
     def draw(self, state, pos=(0, 0)):
         for i in range(len(self.sprite.image_list)):
             state.screen.blit(
                 self.sprite.image_list[i],
                 pos
             )
-
 
 class Ball:
     def __init__(self):
@@ -182,13 +185,11 @@ def eval(previous_state: State, userinput: UserInput) -> State:
     state.enemy.pos.y += grav * state.dt
     state.ball.pos.y += grav * state.dt
 
-    # Don't go off screen
-    if state.player.pos.y >= screen_height - 128 * scale:
-        state.player.pos.y = screen_height - 128 * scale
-    if state.enemy.pos.y >= screen_height - 128 * scale:
-        state.enemy.pos.y = screen_height - 128 * scale
-    if state.ball.pos.y >= screen_height - state.ball.size:
-        state.ball.pos.y = screen_height - state.ball.size
+    # When kicking, if the ball is nearby, move the ball
+    if state.player.current_state == CharacterState.Kicking:
+        if state.player.get_sprite().frame in [0, 1, 2]:
+            if state.player.direction == 1:  # To the right
+                top_right = state.player.pos + state.player.get_sprite
 
     # Update ball position based on velocity
     state.ball.pos += state.ball.vel
@@ -233,6 +234,14 @@ def eval(previous_state: State, userinput: UserInput) -> State:
     if not enemy_moved and state.enemy.current_state == CharacterState.Running:
         state.enemy.current_state = CharacterState.Idle
         state.enemy.get_sprite().frame = 0
+
+    # Don't go off screen
+    if state.player.pos.y >= screen_height - sprite_height * scale:
+        state.player.pos.y = screen_height - sprite_height * scale
+    if state.enemy.pos.y >= screen_height - sprite_height * scale:
+        state.enemy.pos.y = screen_height - sprite_height * scale
+    if state.ball.pos.y >= screen_height - state.ball.size:
+        state.ball.pos.y = screen_height - state.ball.size
 
     # limits FPS to 60
     state.dt = clock.tick(fps) / 1000
