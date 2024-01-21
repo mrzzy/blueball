@@ -4,6 +4,8 @@ from itertools import chain, dropwhile
 from operator import itemgetter, lt
 from typing import Callable, TypeVar, Iterable, Tuple, Union
 
+from simulation import common
+
 Time = float
 Input = TypeVar('Input')
 State = TypeVar('State')
@@ -111,7 +113,8 @@ def client_step_state(
     # replay
     re_xs = list(map(val, ro_txs))
     n_y = play(y, re_xs, update)
-    n_ty = (time(re_xs[-1]), n_y)
+    # n_ty = (time(re_xs[-1]), n_y)
+    n_ty = (time(tys[-1]), n_y)
 
     # remember
     tys.append(n_ty)
@@ -129,7 +132,7 @@ def client_step(
     for tz in tzs:
         client_step = (
             client_step_input
-            if type(tz) is TimedInput else
+            if type(tz[1]) is common.UserInput else
             client_step_state)
         
         yield client_step(tz, mem_txs, mem_tys, update)

@@ -4,7 +4,7 @@ import pygame
 from enum import Enum, auto
 from simulation import common
 from typing import List
-from simulation.sync import sync
+from sync import sync
 import time
 
 def get_sprite(character: common.Character) -> common.Sprite:
@@ -45,7 +45,7 @@ def draw(state: common.State) -> None:
     return None
 
 
-def get_user_input() -> common.UserInput:
+def get_user_input(player) -> common.UserInput:
     inputs: List[common.KeyStroke] = []
     keys = pygame.key.get_pressed()
     if keys[pygame.K_LEFT]:
@@ -67,7 +67,10 @@ def get_user_input() -> common.UserInput:
     return common.UserInput(inputs)
 
 def server_sync(*args):
-    pass
+    class Promise:
+        def is_ready(self):
+            return False
+    return Promise()
 
 def run(player: bool):
     # pygame setup
@@ -84,17 +87,19 @@ def run(player: bool):
                 if event.type == pygame.QUIT:
                     running = False
 
-                yield get_user_input()
+                yield get_user_input(player)
         
         pygame.quit()
     
     add_timestamp = lambda x: (time.time(), x)
 
+    ity = add_timestamp(common.State())
+
     xs = get_user_inputs()
     txs = map(add_timestamp, xs)
 
     def poll_and_merge_inputs_and_states(txs):
-        s_txs = deque()
+        s_txs = deque(maxlen=1)
         for tx in txs:
             s_txs.append(server_sync(tx))
             if s_txs[0].is_ready():
@@ -104,8 +109,9 @@ def run(player: bool):
 
     tzs = poll_and_merge_inputs_and_states(txs)
 
-    tys = sync.client_step(tzs, common.eval)
+    tys = sync.client_step(ity, tzs, common.eval)
 
     ys = map(itemgetter(1), tys)
 
-    list(map(draw, ys))
+    for y in ys:
+        draw(y)
