@@ -222,19 +222,26 @@ def eval(previous_state: State, userinput: UserInput) -> State:
             x = state.player.pos.x
             y = state.player.pos.y
             if state.player.direction == 1:  # To the right
-                if state.ball.pos.x >= x and state.ball.pos.y <= y:
+                if (
+                    state.ball.pos.x >= x
+                    and state.ball.pos.x
+                    <= x + (magic_number * magic_scaling_number) + 100
+                    and state.ball.pos.y <= y
+                ):
                     if not state.ball.kicked:
                         state.ball.kicked = True
-                        if state.ball.pos.y + (
-                            state.ball.size / 2
-                        ) >= y and state.ball.pos.y + (state.ball.size / 2) <= y + (
-                            magic_number * magic_scaling_number
-                        ):
-                            state.ball.vel = pygame.Vector2(5, 0)
-                        elif state.ball.pos.y <= y:
+                        # Aiya whatever
+                        if state.ball.pos.y <= y:
                             state.ball.vel = pygame.Vector2(
                                 ball_initial_horizontal, ball_initial_vertical
                             )
+                        # If the ball is within the bounds of the sprite
+                        # if state.ball.pos.y + (
+                        #     state.ball.size / 2
+                        # ) >= y and state.ball.pos.y + (state.ball.size / 2) <= y + (
+                        #     magic_number * magic_scaling_number
+                        # ):
+                        #     state.ball.vel = pygame.Vector2(5, 0)
                     else:
                         state.ball.vel.x *= ball_acceleration_magic
                         state.ball.vel.y *= ball_acceleration_magic
