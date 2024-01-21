@@ -7,7 +7,7 @@ screen_height = 720
 clock = pygame.time.Clock()
 running = True
 fps = 60
-grav = 100
+grav = 120
 movement = 300
 scale = 3
 jump_max = 10
@@ -204,6 +204,52 @@ class State:
         self.player_score = 0
         self.enemy_score = 0
 
+    def save_state(self):
+        return {
+            "dt" : self.dt,
+            "p.pos.x" : self.player.pos.x,
+            "p.pos.y" : self.player.pos.y,
+            "p.current_state" : self.player.current_state,
+            "p.next_frame_time" : self.player.next_frame_time,
+            "p.is_jumping" : self.player.is_jumping,
+            "p.jump_count" : self.player.jump_count,
+            "p.direction" : self.player.direction,
+            "e.pos.x" : self.enemy.pos.x,
+            "e.pos.y" : self.enemy.pos.y,
+            "e.current_state" : self.enemy.current_state,
+            "e.next_frame_time" : self.enemy.next_frame_time,
+            "e.is_jumping" : self.enemy.is_jumping,
+            "e.jump_count" : self.enemy.jump_count,
+            "e.direction" : self.enemy.direction,
+            "b.pos.x" : self.ball.pos.x,
+            "b.pos.y" : self.ball.pos.y,
+            "b.kicked" : self.ball.kicked,
+            "player_score" : self.player_score,
+            "enemy_score" : self.enemy_score,
+        }
+    
+    def write_state(self, d):
+        self.dt = d["dt"]
+        self.player.pos.x = d["p.pos.x"]
+        self.player.pos.y = d["p.pos.y"]
+        self.player.current_state = d["p.current_state" ]
+        self.player.next_frame_time = d["p.next_frame_time"]
+        self.player.is_jumping = d["p.is_jumping"]
+        self.player.jump_count = d["p.jump_count"]
+        self.player.direction = d["p.direction" ]
+        self.enemy.pos.x = d["e.pos.x"]
+        self.enemy.pos.y = d["e.pos.y"]
+        self.enemy.current_state = d["e.current_state"]
+        self.enemy.next_frame_time = d["e.next_frame_time" ]
+        self.enemy.is_jumping = d["e.is_jumping" ]
+        self.enemy.jump_count = d["e.jump_count" ]
+        self.enemy.direction = d["e.direction" ]
+        self.ball.pos.x = d["b.pos.x"]
+        self.ball.pos.y = d["b.pos.y"]
+        self.ball.kicked = d["b.kicked"]
+        self.player_score = d["player_score"]
+        self.enemy_score = d["enemy_score"]
+
 
 class UserInput:
     def __init__(self, keystrokes):
@@ -223,7 +269,7 @@ def eval(previous_state: State, userinput: UserInput) -> State:
         if state.player.get_sprite().frame in [0, 1]:
             x = state.player.pos.x
             y = state.player.pos.y
-            
+
             if state.player.direction == 1:  # To the right
                 if (
                     state.ball.pos.x >= x
@@ -240,16 +286,24 @@ def eval(previous_state: State, userinput: UserInput) -> State:
                     else:
                         state.ball.vel.x *= ball_acceleration_magic
                         state.ball.vel.y *= ball_acceleration_magic
-                        state.ball.vel.x = abs(state.ball.vel.x) # zm look at this
+                        state.ball.vel.x = abs(state.ball.vel.x)  # zm look at this
             elif state.player.direction == 0:
-                if state.ball.pos.x <= x and state.ball.pos.y <= y:
+                if (
+                    state.ball.pos.x <= x
+                    and state.ball.pos.y <= y
+                    and abs(state.ball.pos.x - x) < 100
+                ):
                     if not state.ball.kicked:
                         state.ball.kicked = True
-                        state.ball.vel = pygame.Vector2(-5, 0)
+                        if state.ball.pos.y <= y:
+                            state.ball.vel = pygame.Vector2(
+                                -ball_initial_horizontal, -ball_initial_vertical
+                            )
                     else:
                         state.ball.vel.x *= ball_acceleration_magic
                         state.ball.vel.y *= ball_acceleration_magic
-    
+                        state.ball.vel.x = -abs(state.ball.vel.x)  # zm look at this
+
     if state.enemy.current_state == CharacterState.Kicking:
         if state.enemy.get_sprite().frame in [0, 1]:
             x = state.enemy.pos.x
@@ -320,9 +374,9 @@ def eval(previous_state: State, userinput: UserInput) -> State:
         if state.player.get_sprite().frame == state.player.get_sprite().end_frame:
             state.player.get_sprite().frame = 0
             state.player.current_state = CharacterState.JumpingDown
-    if state.player.current_state == CharacterState.JumpingDown:
-        if state.player.get_sprite().frame != state.player.get_sprite().end_frame:
-            state.player.pos.y += movement * state.dt * scale
+    # if state.player.current_state == CharacterState.JumpingDown:
+    #     if state.player.get_sprite().frame != state.player.get_sprite().end_frame:
+    #         state.player.pos.y += movement * state.dt * scale
 
     for keystroke in userinput.keystrokes:
         # If he presses space then he goes up into the air
