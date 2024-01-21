@@ -139,7 +139,7 @@ class Character:
     def draw(self, state, inter_frame_delay, position, special_flags=0):
         time_now = pygame.time.get_ticks()
         if time_now > self.next_frame_time:
-            inter_frame_delay = 140
+            inter_frame_delay = 100
             self.next_frame_time = time_now + inter_frame_delay
             if self.get_sprite().frame + 1 > self.get_sprite().end_frame:
                 # Set current frame to 0
@@ -284,14 +284,23 @@ def eval(previous_state: State, userinput: UserInput) -> State:
     enemy_moved = False
 
     if state.player.current_state == CharacterState.JumpingUp:
+        # If its not end of frame
         if state.player.get_sprite().frame != state.player.get_sprite().end_frame:
-            state.player.pos.y -= movement * state.dt
+            state.player.pos.y -= movement * state.dt * scale
+        # If its end of frame, change to 0 and use the jumping down animation
+        if state.player.get_sprite().frame == state.player.get_sprite().end_frame:
+            state.player.get_sprite().frame = 0
+            state.player.current_state = CharacterState.JumpingDown
+    if state.player.current_state == CharacterState.JumpingDown:
+        if state.player.get_sprite().frame != state.player.get_sprite().end_frame:
+            state.player.pos.y += movement * state.dt * scale
 
     for keystroke in userinput.keystrokes:
         # If he presses space then he goes up into the air
-        if state.player.current_state == CharacterState.JumpingUp:
-            if state.player.pos.y + magic_number * magic_scaling_number == 0:
-                state.player.current_state = CharacterState.Idle
+        if (
+            state.player.current_state == CharacterState.JumpingUp
+            or state.player.current_state == CharacterState.JumpingDown
+        ):
             continue
         # Not allowed to move when its kicking
         elif state.player.current_state != CharacterState.Kicking:
