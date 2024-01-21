@@ -15,6 +15,7 @@ magic_number = 17
 spawn_height_margin = 100
 collision_margin = 30
 ball_acceleration_magic = 1.05
+magic_scaling_number = 2
 
 sprite_width = 288
 sprite_height = 128
@@ -212,6 +213,8 @@ def eval(previous_state: State, userinput: UserInput) -> State:
     state.enemy.pos.y += grav * state.dt
     state.ball.pos.y += grav * state.dt
 
+    print(state.player.pos)
+
     # When kicking, if the ball is nearby, move the ball
     if state.player.current_state == CharacterState.Kicking:
         if state.player.get_sprite().frame in [0, 1]:
@@ -308,13 +311,21 @@ def eval(previous_state: State, userinput: UserInput) -> State:
         state.enemy.current_state = CharacterState.Idle
         state.enemy.get_sprite().frame = 0
 
-    # Don't go off screen
-    if state.player.pos.y >= screen_height + magic_number * 2:
-        state.player.pos.y = screen_height + magic_number * 2
-    if state.enemy.pos.y >= screen_height + magic_number * 2:
-        state.enemy.pos.y = screen_height + magic_number * 2
+    # Player / Enemy / Ball don't go below screen
+    if state.player.pos.y >= screen_height + magic_number * magic_scaling_number:
+        state.player.pos.y = screen_height + magic_number * magic_scaling_number
+    if state.enemy.pos.y >= screen_height + magic_number * magic_scaling_number:
+        state.enemy.pos.y = screen_height + magic_number * magic_scaling_number
     if state.ball.pos.y >= screen_height - state.ball.size:
         state.ball.pos.y = screen_height - state.ball.size
+
+    # Player / Enemy / Ball don't clip through to the left
+    if state.player.pos.x - magic_number * magic_scaling_number <= 0:
+        state.player.pos.x = magic_number * magic_scaling_number
+    if state.enemy.pos.x - magic_number * magic_scaling_number <= 0:
+        state.enemy.pos.x = magic_number * magic_scaling_number
+    if state.ball.pos.x - (state.ball.size / 2) * magic_scaling_number <= 0:
+        state.ball.pos.x = (state.ball.size / 2) * magic_scaling_number
 
     # limits FPS to 60
     state.dt = clock.tick(fps) / 1000
