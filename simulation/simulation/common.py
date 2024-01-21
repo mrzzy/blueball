@@ -1,3 +1,4 @@
+import math
 import pygame
 from enum import Enum, auto
 
@@ -16,6 +17,8 @@ spawn_height_margin = 100
 collision_margin = 30
 ball_acceleration_magic = 1.05
 magic_scaling_number = 2
+ball_initial_horizontal = 5
+ball_initial_vertical = 5
 
 sprite_width = 288
 sprite_height = 128
@@ -181,7 +184,7 @@ class Background:
 
 class Ball:
     def __init__(self):
-        self.pos = pygame.Vector2(screen_width / 2, screen_height - spawn_height_margin)
+        self.pos = pygame.Vector2(screen_width / 2, screen_height / 2)
         self.vel = pygame.Vector2(0, 0)
         self.size = 40
         self.kicked = False
@@ -213,8 +216,6 @@ def eval(previous_state: State, userinput: UserInput) -> State:
     state.enemy.pos.y += grav * state.dt
     state.ball.pos.y += grav * state.dt
 
-    print(state.player.pos)
-
     # When kicking, if the ball is nearby, move the ball
     if state.player.current_state == CharacterState.Kicking:
         if state.player.get_sprite().frame in [0, 1]:
@@ -224,7 +225,16 @@ def eval(previous_state: State, userinput: UserInput) -> State:
                 if state.ball.pos.x >= x and state.ball.pos.y <= y:
                     if not state.ball.kicked:
                         state.ball.kicked = True
-                        state.ball.vel = pygame.Vector2(5, 0)
+                        if state.ball.pos.y + (
+                            state.ball.size / 2
+                        ) >= y and state.ball.pos.y + (state.ball.size / 2) <= y + (
+                            magic_number * magic_scaling_number
+                        ):
+                            state.ball.vel = pygame.Vector2(5, 0)
+                        elif state.ball.pos.y <= y:
+                            state.ball.vel = pygame.Vector2(
+                                ball_initial_horizontal, ball_initial_vertical
+                            )
                     else:
                         state.ball.vel.x *= ball_acceleration_magic
                         state.ball.vel.y *= ball_acceleration_magic
@@ -318,6 +328,16 @@ def eval(previous_state: State, userinput: UserInput) -> State:
         state.enemy.pos.y = screen_height + magic_number * magic_scaling_number
     if state.ball.pos.y >= screen_height - state.ball.size:
         state.ball.pos.y = screen_height - state.ball.size
+        state.ball.vel.y *= -1
+
+    # Player / Enemy / Ball don't go through the top of the screen
+    if state.player.pos.y <= 0:
+        state.player.pos.y = 0
+    if state.enemy.pos.y <= 0:
+        state.enemy.pos.y = 0
+    if state.ball.pos.y <= 0:
+        state.ball.pos.y = 0
+        state.ball.vel.y *= -1
 
     # Player / Enemy / Ball don't clip through to the left
     if state.player.pos.x - magic_number * magic_scaling_number <= 0:
@@ -326,6 +346,8 @@ def eval(previous_state: State, userinput: UserInput) -> State:
         state.enemy.pos.x = magic_number * magic_scaling_number
     if state.ball.pos.x - (state.ball.size / 2) * magic_scaling_number <= 0:
         state.ball.pos.x = (state.ball.size / 2) * magic_scaling_number
+        # Bounce the ball around
+        state.ball.vel.x *= -1
 
     # Player / Enemy / Ball don't clip through to the right
     if state.player.pos.x + magic_number * magic_scaling_number >= screen_width:
@@ -334,6 +356,8 @@ def eval(previous_state: State, userinput: UserInput) -> State:
         state.enemy.pos.x = screen_width - (magic_number * magic_scaling_number)
     if state.ball.pos.x + (state.ball.size / 2) * magic_scaling_number >= screen_width:
         state.ball.pos.x = screen_width - (state.ball.size / 2) * magic_scaling_number
+        # Bounce the ball around
+        state.ball.vel.x *= -1
 
     # limits FPS to 60
     state.dt = clock.tick(fps) / 1000
