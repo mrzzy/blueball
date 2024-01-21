@@ -213,15 +213,14 @@ def eval(previous_state: State, userinput: UserInput) -> State:
     # When kicking, if the ball is nearby, move the ball
     if state.player.current_state == CharacterState.Kicking:
         if state.player.get_sprite().frame in [0, 1]:
+            x = state.player.pos.x
+            y = state.player.pos.y
             if state.player.direction == 1:  # To the right
-                x = state.player.pos.x
-                y = state.player.pos.y
-                if (
-                    state.ball.pos.x >= x - collision_margin + (magic_number * 2)
-                    and state.ball.pos.x <= x + collision_margin + (magic_number * 2)
-                    and state.ball.pos.y <= y
-                ):
+                if state.ball.pos.x >= x and state.ball.pos.y <= y:
                     state.ball.vel = (25, 0)
+            elif state.player.direction == 0:
+                if state.ball.pos.x <= x and state.ball.pos.y <= y:
+                    state.ball.vel = (-25, 0)
 
     # Update ball position based on velocity
     state.ball.pos += state.ball.vel
