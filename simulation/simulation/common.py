@@ -12,6 +12,8 @@ scale = 3
 jump_max = 10
 jump_count = 0
 magic_number = 17
+spawn_height_margin = 100
+collision_margin = 30
 
 sprite_width = 288
 sprite_height = 128
@@ -177,7 +179,7 @@ class Background:
 
 class Ball:
     def __init__(self):
-        self.pos = pygame.Vector2(screen_width / 2, screen_height / 2)
+        self.pos = pygame.Vector2(screen_width / 2, screen_height - spawn_height_margin)
         self.vel = pygame.Vector2(0, 0)
         self.size = 40
 
@@ -186,8 +188,10 @@ class State:
     def __init__(self):
         self.dt = 0
         self.screen = pygame.display.set_mode((screen_width, screen_height))
-        self.player = Character(screen_width / 3, screen_height - 100)
-        self.enemy = Character(2 * (screen_width / 3), screen_height - 100)
+        self.player = Character(screen_width / 3, screen_height - spawn_height_margin)
+        self.enemy = Character(
+            2 * (screen_width / 3), screen_height - spawn_height_margin
+        )
         self.background = Background()
         self.ball = Ball()
         self.clock = pygame.time.Clock()
@@ -210,20 +214,12 @@ def eval(previous_state: State, userinput: UserInput) -> State:
     if state.player.current_state == CharacterState.Kicking:
         if state.player.get_sprite().frame in [0, 1]:
             if state.player.direction == 1:  # To the right
-                right_x = (
-                    state.player.pos.x
-                    + (sprite_width * scale)
-                    - ((sprite_width / 2) - 5) * scale
-                )
-                right_y = (
-                    state.player.pos.y
-                    + (sprite_width * scale)
-                    - ((sprite_width / 2) - 5) * scale
-                )
+                x = state.player.pos.x
+                y = state.player.pos.y
                 if (
-                    state.ball.pos.x >= right_x
-                    and state.ball.pos.x <= right_x + 50
-                    and state.ball.pos.y <= right_y
+                    state.ball.pos.x >= x - collision_margin + (magic_number * 2)
+                    and state.ball.pos.x <= x + collision_margin + (magic_number * 2)
+                    and state.ball.pos.y <= y
                 ):
                     state.ball.vel = (25, 0)
 
