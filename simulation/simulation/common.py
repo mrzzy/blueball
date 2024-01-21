@@ -223,12 +223,12 @@ def eval(previous_state: State, userinput: UserInput) -> State:
         if state.player.get_sprite().frame in [0, 1]:
             x = state.player.pos.x
             y = state.player.pos.y
+            
             if state.player.direction == 1:  # To the right
                 if (
                     state.ball.pos.x >= x
-                    and state.ball.pos.x
-                    <= x + (magic_number * magic_scaling_number) + 100
                     and state.ball.pos.y <= y
+                    and abs(state.ball.pos.x - x) < 100
                 ):
                     if not state.ball.kicked:
                         state.ball.kicked = True
@@ -240,6 +240,7 @@ def eval(previous_state: State, userinput: UserInput) -> State:
                     else:
                         state.ball.vel.x *= ball_acceleration_magic
                         state.ball.vel.y *= ball_acceleration_magic
+                        state.ball.vel.x = abs(state.ball.vel.x) # zm look at this
             elif state.player.direction == 0:
                 if state.ball.pos.x <= x and state.ball.pos.y <= y:
                     if not state.ball.kicked:
@@ -248,7 +249,7 @@ def eval(previous_state: State, userinput: UserInput) -> State:
                     else:
                         state.ball.vel.x *= ball_acceleration_magic
                         state.ball.vel.y *= ball_acceleration_magic
-
+    
     if state.enemy.current_state == CharacterState.Kicking:
         if state.enemy.get_sprite().frame in [0, 1]:
             x = state.enemy.pos.x
