@@ -327,6 +327,14 @@ def eval(previous_state: State, userinput: UserInput) -> State:
     if state.ball.pos.x - (state.ball.size / 2) * magic_scaling_number <= 0:
         state.ball.pos.x = (state.ball.size / 2) * magic_scaling_number
 
+    # Player / Enemy / Ball don't clip through to the right
+    if state.player.pos.x + magic_number * magic_scaling_number >= screen_width:
+        state.player.pos.x = screen_width - (magic_number * magic_scaling_number)
+    if state.enemy.pos.x + magic_number * magic_scaling_number >= screen_width:
+        state.enemy.pos.x = screen_width - (magic_number * magic_scaling_number)
+    if state.ball.pos.x + (state.ball.size / 2) * magic_scaling_number >= screen_width:
+        state.ball.pos.x = screen_width - (state.ball.size / 2) * magic_scaling_number
+
     # limits FPS to 60
     state.dt = clock.tick(fps) / 1000
     return state
