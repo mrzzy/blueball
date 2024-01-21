@@ -230,28 +230,24 @@ def eval(previous_state: State, userinput: UserInput) -> State:
     enemy_moved = False
     for keystroke in userinput.keystrokes:
         # Whlie it is in the air
-        if state.player.current_state == CharacterState.JumpingUp:
-            player_moved = True
-            state.player.pos.y -= movement * state.dt * 2
-            if keystroke == KeyStroke.P_MoveLeft:
-                state.player.pos.x -= movement * state.dt
-            elif keystroke == KeyStroke.P_MoveRight:
-                state.player.pos.x += movement * state.dt
+        # if state.player.current_state == CharacterState.JumpingUp:
+        #     player_moved = True
+        #     state.player.pos.y -= movement * state.dt * 2
+        #     if keystroke == KeyStroke.P_MoveLeft:
+        #         state.player.pos.x -= movement * state.dt
+        #     elif keystroke == KeyStroke.P_MoveRight:
+        #         state.player.pos.x += movement * state.dt
 
-            if state.player.get_sprite().frame == state.player.get_sprite().end_frame:
-                state.player.current_state = CharacterState.JumpingDown
-        elif state.player.current_state == CharacterState.JumpingDown:
-            player_moved = True
-            state.player.pos.y -= movement * state.dt * 2
-            if state.player.pos.y == 0:
-                state.player.current_state = CharacterState.Idle
+        #     if state.player.get_sprite().frame == state.player.get_sprite().end_frame:
+        #         state.player.current_state = CharacterState.JumpingDown
+        # elif state.player.current_state == CharacterState.JumpingDown:
+        #     player_moved = True
+        #     state.player.pos.y -= movement * state.dt * 2
+        #     if state.player.pos.y == 0:
+        #         state.player.current_state = CharacterState.Idle
 
         # Not allowed to move when its kicking
-        elif (
-            state.player.current_state != CharacterState.Kicking
-            or state.player.current_state != CharacterState.JumpingDown
-            or state.player.current_state != CharacterState.JumpingUp
-        ):
+        if state.player.current_state != CharacterState.Kicking:
             if keystroke == KeyStroke.P_MoveLeft:
                 player_moved = True
                 state.player.current_state = CharacterState.Running
