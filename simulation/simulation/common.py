@@ -283,6 +283,32 @@ def eval(previous_state: State, userinput: UserInput) -> State:
     player_moved = False
     enemy_moved = False
 
+    # Deal with the player jumping
+    if state.player.current_state == CharacterState.JumpingUp:
+        # If its not end of frame
+        if state.player.get_sprite().frame != state.player.get_sprite().end_frame:
+            state.player.pos.y -= movement * state.dt * scale
+        # If its end of frame, change to 0 and use the jumping down animation
+        if state.player.get_sprite().frame == state.player.get_sprite().end_frame:
+            state.player.get_sprite().frame = 0
+            state.player.current_state = CharacterState.JumpingDown
+    if state.player.current_state == CharacterState.JumpingDown:
+        if state.player.get_sprite().frame != state.player.get_sprite().end_frame:
+            state.player.pos.y += movement * state.dt * scale
+
+    # Deal with the enemy jumping
+    if state.enemy.current_state == CharacterState.JumpingUp:
+        # If its not end of frame
+        if state.enemy.get_sprite().frame != state.enemy.get_sprite().end_frame:
+            state.enemy.pos.y -= movement * state.dt * scale
+        # If its end of frame, change to 0 and use the jumping down animation
+        if state.enemy.get_sprite().frame == state.enemy.get_sprite().end_frame:
+            state.enemy.get_sprite().frame = 0
+            state.enemy.current_state = CharacterState.JumpingDown
+    if state.enemy.current_state == CharacterState.JumpingDown:
+        if state.enemy.get_sprite().frame != state.enemy.get_sprite().end_frame:
+            state.enemy.pos.y += movement * state.dt * scale
+
     if state.player.current_state == CharacterState.JumpingUp:
         # If its not end of frame
         if state.player.get_sprite().frame != state.player.get_sprite().end_frame:
@@ -304,12 +330,12 @@ def eval(previous_state: State, userinput: UserInput) -> State:
             continue
         # Not allowed to move when its kicking
         elif state.player.current_state != CharacterState.Kicking:
-            if keystroke == KeyStroke.P_MoveLeft:
+            if keystroke == KeyStroke.P_MoveLeft and state.player.pos.y - magic_number * magic_scaling_number >= screen_height:
                 player_moved = True
                 state.player.current_state = CharacterState.Running
                 state.player.direction = 0
                 state.player.pos.x -= movement * state.dt
-            if keystroke == KeyStroke.P_MoveRight:
+            if keystroke == KeyStroke.P_MoveRight and state.player.pos.y - magic_number * magic_scaling_number >= screen_height:
                 player_moved = True
                 state.player.current_state = CharacterState.Running
                 state.player.direction = 1
