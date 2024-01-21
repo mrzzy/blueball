@@ -235,17 +235,40 @@ def eval(previous_state: State, userinput: UserInput) -> State:
                             state.ball.vel = pygame.Vector2(
                                 ball_initial_horizontal, ball_initial_vertical
                             )
-                        # If the ball is within the bounds of the sprite
-                        # if state.ball.pos.y + (
-                        #     state.ball.size / 2
-                        # ) >= y and state.ball.pos.y + (state.ball.size / 2) <= y + (
-                        #     magic_number * magic_scaling_number
-                        # ):
-                        #     state.ball.vel = pygame.Vector2(5, 0)
                     else:
                         state.ball.vel.x *= ball_acceleration_magic
                         state.ball.vel.y *= ball_acceleration_magic
             elif state.player.direction == 0:
+                if state.ball.pos.x <= x and state.ball.pos.y <= y:
+                    if not state.ball.kicked:
+                        state.ball.kicked = True
+                        state.ball.vel = pygame.Vector2(-5, 0)
+                    else:
+                        state.ball.vel.x *= ball_acceleration_magic
+                        state.ball.vel.y *= ball_acceleration_magic
+
+    if state.enemy.current_state == CharacterState.Kicking:
+        if state.enemy.get_sprite().frame in [0, 1]:
+            x = state.enemy.pos.x
+            y = state.enemy.pos.y
+            if state.enemy.direction == 1:  # To the right
+                if (
+                    state.ball.pos.x >= x
+                    and state.ball.pos.x
+                    <= x + (magic_number * magic_scaling_number) + 100
+                    and state.ball.pos.y <= y
+                ):
+                    if not state.ball.kicked:
+                        state.ball.kicked = True
+                        # Aiya whatever
+                        if state.ball.pos.y <= y:
+                            state.ball.vel = pygame.Vector2(
+                                ball_initial_horizontal, ball_initial_vertical
+                            )
+                    else:
+                        state.ball.vel.x *= ball_acceleration_magic
+                        state.ball.vel.y *= ball_acceleration_magic
+            elif state.enemy.direction == 0:
                 if state.ball.pos.x <= x and state.ball.pos.y <= y:
                     if not state.ball.kicked:
                         state.ball.kicked = True
