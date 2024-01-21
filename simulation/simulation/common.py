@@ -362,8 +362,8 @@ def eval(previous_state: State, userinput: UserInput) -> State:
         state.player.pos.y = 0
     if state.enemy.pos.y <= 0:
         state.enemy.pos.y = 0
-    if state.ball.pos.y <= 0:
-        state.ball.pos.y = 0
+    if state.ball.pos.y - (state.ball.size / 2) <= 0:
+        state.ball.pos.y = state.ball.size / 2
         state.ball.vel.y *= -1
 
     # Player / Enemy / Ball don't clip through to the left
