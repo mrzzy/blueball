@@ -87,7 +87,7 @@ def run(player: bool):
                 if event.type == pygame.QUIT:
                     running = False
 
-                yield get_user_input(player)
+            yield get_user_input(player)
         
         pygame.quit()
     
@@ -99,7 +99,7 @@ def run(player: bool):
     txs = map(add_timestamp, xs)
 
     def poll_and_merge_inputs_and_states(txs):
-        s_txs = deque(maxlen=1)
+        s_txs = deque(maxlen=10)
         for tx in txs:
             s_txs.append(server_sync(tx))
             if s_txs[0].is_ready():
