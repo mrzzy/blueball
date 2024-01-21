@@ -19,6 +19,7 @@ def get_sprite(character: common.Character) -> common.Sprite:
 
 def draw_fps_counter(state):
     font = pygame.font.SysFont("Arial", 18, bold=True)
+    state.clock.tick()
     fps = str(int(state.clock.get_fps()))
     fps_font = font.render(fps, 1, pygame.Color("RED"))
     state.screen.blit(fps_font, (50, 0))
@@ -90,7 +91,6 @@ def run(player: bool):
         running = True
         state = common.State()
         while running:
-            state.clock.tick()
             # poll for events
             # pygame.QUIT event means the user clicked X to close your window
             for event in pygame.event.get():
