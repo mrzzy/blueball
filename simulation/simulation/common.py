@@ -6,11 +6,16 @@ screen_height = 720
 clock = pygame.time.Clock()
 running = True
 fps = 60
-grav = 300
+grav = 100
 movement = 300
 scale = 3
 jump_max = 10
 jump_count = 0
+magic_number = 17
+spawn_height_margin = 100
+collision_margin = 30
+ball_acceleration_magic = 1.05
+magic_scaling_number = 2
 
 sprite_width = 288
 sprite_height = 128
@@ -131,7 +136,7 @@ class Character:
     def draw(self, state, inter_frame_delay, position, special_flags=0):
         time_now = pygame.time.get_ticks()
         if time_now > self.next_frame_time:
-            inter_frame_delay = 80
+            inter_frame_delay = 140
             self.next_frame_time = time_now + inter_frame_delay
             if self.get_sprite().frame + 1 > self.get_sprite().end_frame:
                 # Set current frame to 0
@@ -142,8 +147,16 @@ class Character:
                 self.get_sprite().frame = 0
             self.get_sprite().frame += 1
 
-        center_sprite = (position.x - (self.get_sprite().image_list[self.get_sprite().frame].get_width() / 2), 
-                         position.y - ((self.get_sprite().image_list[0].get_height() / 2) + self.get_sprite().image_list[self.get_sprite().frame].get_height() - 17))
+        center_sprite = (
+            position.x
+            - (self.get_sprite().image_list[self.get_sprite().frame].get_width() / 2),
+            position.y
+            - (
+                (self.get_sprite().image_list[0].get_height() / 2)
+                + self.get_sprite().image_list[self.get_sprite().frame].get_height()
+                - 17
+            ),
+        )
         state.screen.blit(
             self.get_sprite().image_list[self.get_sprite().frame]
             if self.direction
@@ -168,17 +181,20 @@ class Background:
 
 class Ball:
     def __init__(self):
-        self.pos = pygame.Vector2(screen_width / 2, screen_height / 2)
+        self.pos = pygame.Vector2(screen_width / 2, screen_height - spawn_height_margin)
         self.vel = pygame.Vector2(0, 0)
         self.size = 40
+        self.kicked = False
 
 
 class State:
     def __init__(self):
         self.dt = 0
         self.screen = pygame.display.set_mode((screen_width, screen_height))
-        self.player = Character(screen_width / 3, screen_height / 3)
-        self.enemy = Character(2 * (screen_width / 3), 2 * (screen_height / 3))
+        self.player = Character(screen_width / 3, screen_height - spawn_height_margin)
+        self.enemy = Character(
+            2 * (screen_width / 3), screen_height - spawn_height_margin
+        )
         self.background = Background()
         self.ball = Ball()
         self.clock = pygame.time.Clock()
@@ -197,26 +213,29 @@ def eval(previous_state: State, userinput: UserInput) -> State:
     state.enemy.pos.y += grav * state.dt
     state.ball.pos.y += grav * state.dt
 
+    print(state.player.pos)
+
     # When kicking, if the ball is nearby, move the ball
     if state.player.current_state == CharacterState.Kicking:
         if state.player.get_sprite().frame in [0, 1]:
+            x = state.player.pos.x
+            y = state.player.pos.y
             if state.player.direction == 1:  # To the right
-                right_x = (
-                    state.player.pos.x
-                    + (sprite_width * scale)
-                    - ((sprite_width / 2) - 5) * scale
-                )
-                right_y = (
-                    state.player.pos.y
-                    + (sprite_width * scale)
-                    - ((sprite_width / 2) - 5) * scale
-                )
-                if (
-                    state.ball.pos.x >= right_x
-                    and state.ball.pos.x <= right_x + 50
-                    and state.ball.pos.y <= right_y
-                ):
-                    state.ball.vel = (25, 0)
+                if state.ball.pos.x >= x and state.ball.pos.y <= y:
+                    if not state.ball.kicked:
+                        state.ball.kicked = True
+                        state.ball.vel = pygame.Vector2(5, 0)
+                    else:
+                        state.ball.vel.x *= ball_acceleration_magic
+                        state.ball.vel.y *= ball_acceleration_magic
+            elif state.player.direction == 0:
+                if state.ball.pos.x <= x and state.ball.pos.y <= y:
+                    if not state.ball.kicked:
+                        state.ball.kicked = True
+                        state.ball.vel = pygame.Vector2(-5, 0)
+                    else:
+                        state.ball.vel.x *= ball_acceleration_magic
+                        state.ball.vel.y *= ball_acceleration_magic
 
     # Update ball position based on velocity
     state.ball.pos += state.ball.vel
@@ -224,6 +243,23 @@ def eval(previous_state: State, userinput: UserInput) -> State:
     player_moved = False
     enemy_moved = False
     for keystroke in userinput.keystrokes:
+        # Whlie it is in the air
+        # if state.player.current_state == CharacterState.JumpingUp:
+        #     player_moved = True
+        #     state.player.pos.y -= movement * state.dt * 2
+        #     if keystroke == KeyStroke.P_MoveLeft:
+        #         state.player.pos.x -= movement * state.dt
+        #     elif keystroke == KeyStroke.P_MoveRight:
+        #         state.player.pos.x += movement * state.dt
+
+        #     if state.player.get_sprite().frame == state.player.get_sprite().end_frame:
+        #         state.player.current_state = CharacterState.JumpingDown
+        # elif state.player.current_state == CharacterState.JumpingDown:
+        #     player_moved = True
+        #     state.player.pos.y -= movement * state.dt * 2
+        #     if state.player.pos.y == 0:
+        #         state.player.current_state = CharacterState.Idle
+
         # Not allowed to move when its kicking
         if state.player.current_state != CharacterState.Kicking:
             if keystroke == KeyStroke.P_MoveLeft:
@@ -275,13 +311,21 @@ def eval(previous_state: State, userinput: UserInput) -> State:
         state.enemy.current_state = CharacterState.Idle
         state.enemy.get_sprite().frame = 0
 
-    # Don't go off screen
-    if state.player.pos.y >= screen_height - sprite_height * scale:
-        state.player.pos.y = screen_height - sprite_height * scale
-    if state.enemy.pos.y >= screen_height - sprite_height * scale:
-        state.enemy.pos.y = screen_height - sprite_height * scale
+    # Player / Enemy / Ball don't go below screen
+    if state.player.pos.y >= screen_height + magic_number * magic_scaling_number:
+        state.player.pos.y = screen_height + magic_number * magic_scaling_number
+    if state.enemy.pos.y >= screen_height + magic_number * magic_scaling_number:
+        state.enemy.pos.y = screen_height + magic_number * magic_scaling_number
     if state.ball.pos.y >= screen_height - state.ball.size:
         state.ball.pos.y = screen_height - state.ball.size
+
+    # Player / Enemy / Ball don't clip through to the left
+    if state.player.pos.x - magic_number * magic_scaling_number <= 0:
+        state.player.pos.x = magic_number * magic_scaling_number
+    if state.enemy.pos.x - magic_number * magic_scaling_number <= 0:
+        state.enemy.pos.x = magic_number * magic_scaling_number
+    if state.ball.pos.x - (state.ball.size / 2) * magic_scaling_number <= 0:
+        state.ball.pos.x = (state.ball.size / 2) * magic_scaling_number
 
     # limits FPS to 60
     state.dt = clock.tick(fps) / 1000
