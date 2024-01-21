@@ -21,6 +21,13 @@ def draw_fps_counter(state):
     state.screen.blit(fps_font, (50, 0))
 
 
+def draw_score(state: common.State) -> None:
+    font = pygame.font.SysFont("Arial", 18, bold=True)
+    score = str(state.player_score) + " - " + str(state.enemy_score)
+    score_font = font.render(score, 1, pygame.Color("BLUE"))
+    state.screen.blit(score_font, ((1280 / 2) - 50, 0))
+
+
 def draw(state: common.State) -> None:
     # fill the screen with a color to wipe away anything from last frame
     state.screen.fill("white")
@@ -28,6 +35,9 @@ def draw(state: common.State) -> None:
 
     # Draw fps
     draw_fps_counter(state)
+
+    # Draw score
+    draw_score(state)
 
     # Draw ball
     pygame.draw.circle(state.screen, "blue", state.ball.pos, state.ball.size)

@@ -201,6 +201,8 @@ class State:
         self.background = Background()
         self.ball = Ball()
         self.clock = pygame.time.Clock()
+        self.player_score = 0
+        self.enemy_score = 0
 
 
 class UserInput:
