@@ -14,6 +14,7 @@ jump_count = 0
 magic_number = 17
 spawn_height_margin = 100
 collision_margin = 30
+ball_acceleration_magic = 1.05
 
 sprite_width = 288
 sprite_height = 128
@@ -182,6 +183,7 @@ class Ball:
         self.pos = pygame.Vector2(screen_width / 2, screen_height - spawn_height_margin)
         self.vel = pygame.Vector2(0, 0)
         self.size = 40
+        self.kicked = False
 
 
 class State:
@@ -217,10 +219,20 @@ def eval(previous_state: State, userinput: UserInput) -> State:
             y = state.player.pos.y
             if state.player.direction == 1:  # To the right
                 if state.ball.pos.x >= x and state.ball.pos.y <= y:
-                    state.ball.vel = (25, 0)
+                    if not state.ball.kicked:
+                        state.ball.kicked = True
+                        state.ball.vel = pygame.Vector2(5, 0)
+                    else:
+                        state.ball.vel.x *= ball_acceleration_magic
+                        state.ball.vel.y *= ball_acceleration_magic
             elif state.player.direction == 0:
                 if state.ball.pos.x <= x and state.ball.pos.y <= y:
-                    state.ball.vel = (-25, 0)
+                    if not state.ball.kicked:
+                        state.ball.kicked = True
+                        state.ball.vel = pygame.Vector2(-5, 0)
+                    else:
+                        state.ball.vel.x *= ball_acceleration_magic
+                        state.ball.vel.y *= ball_acceleration_magic
 
     # Update ball position based on velocity
     state.ball.pos += state.ball.vel
