@@ -330,12 +330,20 @@ def eval(previous_state: State, userinput: UserInput) -> State:
             continue
         # Not allowed to move when its kicking
         elif state.player.current_state != CharacterState.Kicking:
-            if keystroke == KeyStroke.P_MoveLeft and state.player.pos.y - magic_number * magic_scaling_number >= screen_height:
+            if (
+                keystroke == KeyStroke.P_MoveLeft
+                and state.player.pos.y - magic_number * magic_scaling_number
+                >= screen_height
+            ):
                 player_moved = True
                 state.player.current_state = CharacterState.Running
                 state.player.direction = 0
                 state.player.pos.x -= movement * state.dt
-            if keystroke == KeyStroke.P_MoveRight and state.player.pos.y - magic_number * magic_scaling_number >= screen_height:
+            if (
+                keystroke == KeyStroke.P_MoveRight
+                and state.player.pos.y - magic_number * magic_scaling_number
+                >= screen_height
+            ):
                 player_moved = True
                 state.player.current_state = CharacterState.Running
                 state.player.direction = 1
@@ -351,7 +359,12 @@ def eval(previous_state: State, userinput: UserInput) -> State:
                 player_moved = True
                 state.player.current_state = CharacterState.JumpingUp
 
-        if state.enemy.current_state != CharacterState.Kicking:
+        if (
+            state.enemy.current_state == CharacterState.JumpingUp
+            or state.enemy.current_state == CharacterState.JumpingDown
+        ):
+            continue
+        elif state.enemy.current_state != CharacterState.Kicking:
             if keystroke == KeyStroke.E_MoveLeft:
                 enemy_moved = True
                 state.enemy.current_state = CharacterState.Running
@@ -365,16 +378,13 @@ def eval(previous_state: State, userinput: UserInput) -> State:
             if keystroke == KeyStroke.E_Kick:
                 enemy_moved = True
                 state.enemy.current_state = CharacterState.Kicking
-            if keystroke == KeyStroke.E_Jump:
+            if (
+                keystroke == KeyStroke.E_Jump
+                and state.enemy.pos.y - magic_number * magic_scaling_number
+                >= screen_height
+            ):
                 enemy_moved = True
                 state.enemy.current_state = CharacterState.JumpingUp
-
-    # if state.player.is_jumping:
-    #     state.player.pos.y -= jump_count
-    #     if jump_count > -jump_max:
-    #         jump_count -= 1
-    #     else:
-    #         state.player.is_jumping = False
 
     if not player_moved and state.player.current_state == CharacterState.Running:
         state.player.current_state = CharacterState.Idle
