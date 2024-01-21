@@ -6,6 +6,7 @@
 import logging
 import asyncio
 from argparse import ArgumentParser
+from typing import cast
 
 from logfmter.formatter import Logfmter
 from aioquic.asyncio.protocol import QuicConnectionProtocol
@@ -14,17 +15,40 @@ from aioquic.quic.events import QuicEvent
 from aioquic.quic.logger import QuicLogger, QuicLoggerTrace
 from aioquic.asyncio.server import serve
 
-from network import PROTOCOL_NAME, PROTOCOL_PORT, QuicStdoutLogger
+from network import PROTOCOL_NAME, PROTOCOL_PORT, QuicStdoutLogger, _write
+from network.protocol import Packet, PacketKind, RegisterRequest, RegisterResponse
 
 
-class Player:
-    """Tracks a single game player in the multiplayer game setting."""
+class Client:
+    """Client in served by the Blueball Server"""
 
     def __init__(self, reader: asyncio.StreamReader, writer: asyncio.StreamWriter):
-        self._reader = reader
-        self._writer = writer
+        self.reader = reader
+        self.writer = writer
 
-async def main():
+
+async def register(clients: list[Client], client: Client):
+    """Client registration request flow"""
+    # parse expected register packet from client
+    p = Packet.from_bytes(await client.reader.read())
+    if p.payload.kind != PacketKind.RegisterRequest:
+        logging.error("Client failed to register.")
+
+    request = cast(RegisterRequest, p.payload)
+    if request.client_id is None:
+        # new client registering
+        client_id = len(clients)
+        clients.append(client)
+    else:
+        # existing client restablishing stream connection
+        client_id = request.client_id
+        clients[client_id] = client
+
+    # reply with client_id
+    await _write(client.writer, Packet(RegisterResponse(client_id)).to_bytes())
+
+
+def parse_args():
     # parse command line arguments
     parser = ArgumentParser(description="Blueball game server")
     parser.add_argument(
@@ -69,7 +93,11 @@ async def main():
         default=False,
         help="Whether to log verbose debug messages",
     )
-    args = parser.parse_args()
+    return parser.parse_args()
+
+
+async def main():
+    args = parse_args()
 
     # setup logger
     log_handler = logging.StreamHandler()
@@ -79,7 +107,7 @@ async def main():
         level=logging.INFO if args.verbose == False else logging.DEBUG,
     )
 
-    # bootstrap server
+    # bootstrap quic server
     config = QuicConfiguration(
         is_client=False,
         alpn_protocols=[PROTOCOL_NAME],
@@ -87,25 +115,24 @@ async def main():
     )
     config.load_cert_chain(args.certificate, args.private_key)
 
-    players: list[Player] = []
+    clients = []
 
-    def new_player(reader: asyncio.StreamReader, writer: asyncio.StreamWriter):
-        players.append(Player(reader, writer))
-        logging.info("New player registered.")
+    def new_stream(reader: asyncio.StreamReader, writer: asyncio.StreamWriter):
+        asyncio.get_event_loop().create_task(register(clients, Client(reader, writer)))
 
     await serve(
         host=args.address,
         port=args.port,
         configuration=config,
-        stream_handler=new_player,
+        stream_handler=new_stream,
     )
 
-    # serve requests from users
-    while True:
-        if len(players) >= 1 and not players[0]._reader.at_eof():
-            x = await players[0]._reader.read()
-            logging.info(f"GOT: {x}")
-        await asyncio.sleep(0.001)
+    logging.info("Server listening", extra={"address": args.address, "port": args.port})
+
+    # handle requests from users
+    await asyncio.Future()
+    # while True:
+    #     await asyncio.sleep(0.001)
 
 
 if __name__ == "__main__":
